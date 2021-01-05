@@ -1,6 +1,6 @@
 <?php
 
-namespace Vlinde\Bugster\src\Console\Commands\GenerateStats;
+namespace Vlinde\Bugster\Console\Commands;
 
 use Carbon\Carbon;
 use Illuminate\Console\Command;

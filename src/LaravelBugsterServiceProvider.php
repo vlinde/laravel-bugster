@@ -3,6 +3,9 @@
 namespace Vlinde\Bugster;
 
 use Illuminate\Support\ServiceProvider;
+use Vlinde\Bugster\Console\Commands\DeleteOldBugs;
+use Vlinde\Bugster\Console\Commands\GenerateStats;
+use Vlinde\Bugster\Console\Commands\MoveBugsToSQL;
 
 class LaravelBugsterServiceProvider extends ServiceProvider
 {
@@ -22,6 +25,7 @@ class LaravelBugsterServiceProvider extends ServiceProvider
             __DIR__.'/../config/bugster.php' => config_path('bugster.php'),
         ], 'bugster.config');
 
+        $this->registerCommands();
 
         $this->publishes([
             __DIR__ . '/Database/Migrations/create_laravel_bugster_bugs_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_bugs_table.php'),
@@ -45,10 +49,21 @@ class LaravelBugsterServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/bugster.php', 'bugster');
 
+        $this->registerCommands();
+
         // Register the service the package provides.
         $this->app->singleton('bugster', function ($app) {
             return new Bugster;
         });
+    }
+
+    protected function registerCommands(): void
+    {
+        $this->commands([
+            DeleteOldBugs::class,
+            GenerateStats::class,
+            MoveBugsToSQL::class
+        ]);
     }
 
     /**

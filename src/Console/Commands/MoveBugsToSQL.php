@@ -1,12 +1,13 @@
 <?php
 
-namespace Vlinde\Bugster\src\Console\Commands\MoveBugsToSQL;
+namespace Vlinde\Bugster\Console\Commands;
 
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
+use Vlinde\Bugster\Models\AdvancedBugsterStat;
 
 class MoveBugsToSQL extends Command
 {
