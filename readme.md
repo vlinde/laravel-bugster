@@ -12,14 +12,24 @@ This is where your description should go. Take a look at [contributing.md](contr
 Via Composer
 
 ``` bash
-$ composer require vlinde/advancedbugster
+$ composer require vlinde/laravel-bugster
 ```
 
-Add redis configuration to database.php in config folder ( more information can be found in config/advancedbugster.php )
+Add redis configuration to database.php in config folder.
+Example: 
+```
+'Bugster' => [
+            'host' => env('REDIS_HOST', 'localhost'),
+            'password' => env('REDIS_PASSWORD', NULL),
+            'port' => env('REDIS_PORT', 6379),
+            'database' => env('REDIS_DATABASE','2'), // Modify this number to change the Redis database number
+        ],
+```
 
 Publish vendor for migrations then migrate
 ``` bash
 $ php artisan vendor:publish --tag=migrations
+$ php artisan vendor:publish --tag=bugster.config
 $ php artisan migrate
 ```
 ## Usage
@@ -78,13 +88,13 @@ If you discover any security related issues, please email author email instead o
 
 license. Please see the [license file](license.md) for more information.
 
-[ico-version]: https://img.shields.io/packagist/v/vlinde/advancedbugster.svg?style=flat-square
-[ico-downloads]: https://img.shields.io/packagist/dt/vlinde/advancedbugster.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/vlinde/advancedbugster/master.svg?style=flat-square
+[ico-version]: https://img.shields.io/packagist/v/vlinde/laravel-bugster.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/vlinde/laravel-bugster.svg?style=flat-square
+[ico-travis]: https://img.shields.io/travis/vlinde/laravel-bugster/master.svg?style=flat-square
 [ico-styleci]: https://styleci.io/repos/12345678/shield
 
-[link-packagist]: https://packagist.org/packages/vlinde/advancedbugster
-[link-downloads]: https://packagist.org/packages/vlinde/advancedbugster
-[link-travis]: https://travis-ci.org/vlinde/advancedbugster
+[link-packagist]: https://packagist.org/packages/vlinde/laravel-bugster
+[link-downloads]: https://packagist.org/packages/vlinde/laravel-bugster
+[link-travis]: https://travis-ci.org/vlinde/laravel-bugster
 [link-styleci]: https://styleci.io/repos/12345678
 [link-author]: https://github.com/vlinde

@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Vlinde\\Bugster\\": "../../../../laravel-bugster/src/"
+            "Vlinde\\Bugster\\": "src"
         }
     },
     "autoload-dev": {
