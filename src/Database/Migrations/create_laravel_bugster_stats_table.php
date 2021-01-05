@@ -20,7 +20,7 @@ class CreateLaravelBugsterStatsTable extends Migration
             $table->text('errors');
             $table->timestamps();
 
-            $table->foreign('url_id')->references('id')->on('advanced_bugster_links');
+            $table->foreign('url_id')->references('id')->on('laravel_bugster_links');
         });
     }
 
