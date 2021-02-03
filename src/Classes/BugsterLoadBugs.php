@@ -32,7 +32,7 @@ class BugsterLoadBugs
                 'ip_address' => $request->ip(),
                 'headers' => json_encode($request->header())
             ];
-            $conn = Redis::connection('advancedBugster');
+            $conn = Redis::connection('Bugster');
             $conn->set("error_log" . Carbon::now()->toDateString() . ":error_log" . str_replace(":", "-", Carbon::now()->toTimeString()), json_encode($error), 'EX', 172800);
         }
 
