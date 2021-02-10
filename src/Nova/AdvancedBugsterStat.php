@@ -5,8 +5,8 @@ namespace Vlinde\Bugster\Nova;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Fields\Date;
-use Laravel\Nova\Fields\Integer;
+use Laravel\Nova\Fields\Number;
+use Laravel\Nova\Resource;
 
 class AdvancedBugsterStat extends Resource
 {
@@ -44,9 +44,9 @@ class AdvancedBugsterStat extends Resource
         return [
             ID::make()->sortable(),
 
-            Date::make('Date'),
+            Text::make('Date'),
 
-            Integer::make('Url_id'),
+            Number::make('Url_id'),
 
             Text::make('Errors'),
         ];
