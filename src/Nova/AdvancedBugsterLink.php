@@ -21,7 +21,7 @@ class AdvancedBugsterLink extends Resource
      *
      * @var string
      */
-    public static $title = 'status_code';
+    public static $title = 'id';
 
     /**
      * The columns that should be searched.
@@ -92,5 +92,27 @@ class AdvancedBugsterLink extends Resource
     public function actions(Request $request)
     {
         return [];
+    }
+
+    /**
+     * Determine if the current user can update the given resource.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return bool
+     */
+    public function authorizedToUpdate(Request $request)
+    {
+        return false;
+    }
+
+    /**
+     * Determine if the current user can create the given resource.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return bool
+     */
+    public static function authorizedToCreate(Request $request)
+    {
+        return false;
     }
 }

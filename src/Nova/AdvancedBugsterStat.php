@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Number;
+use Laravel\Nova\Fields\BelongsTo;
 use Laravel\Nova\Resource;
 
 class AdvancedBugsterStat extends Resource
@@ -46,9 +47,9 @@ class AdvancedBugsterStat extends Resource
 
             Text::make('Date'),
 
-            Number::make('Url_id'),
+            BelongsTo::make('AdvancedBugsterLink', 'url', 'Vlinde\Bugster\Nova\AdvancedBugsterLink'),
 
-            Text::make('Errors'),
+            Text::make('Errors')->sortable(),
         ];
 
     }
@@ -95,5 +96,27 @@ class AdvancedBugsterStat extends Resource
     public function actions(Request $request)
     {
         return [];
+    }
+
+    /**
+     * Determine if the current user can update the given resource.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return bool
+     */
+    public function authorizedToUpdate(Request $request)
+    {
+        return false;
+    }
+
+    /**
+     * Determine if the current user can create the given resource.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return bool
+     */
+    public static function authorizedToCreate(Request $request)
+    {
+        return false;
     }
 }

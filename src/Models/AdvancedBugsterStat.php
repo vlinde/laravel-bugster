@@ -8,7 +8,7 @@ class AdvancedBugsterStat extends Model
 {
 
     public function url() {
-        return $this->hasOne(AdvancedBugsterLink::class);
+        return $this->belongsTo(AdvancedBugsterLink::class, 'url_id', 'id');
     }
 
     protected $table = 'laravel_bugster_stats';
