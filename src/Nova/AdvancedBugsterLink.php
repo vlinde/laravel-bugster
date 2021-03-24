@@ -23,6 +23,8 @@ class AdvancedBugsterLink extends Resource
      */
     public static $title = 'id';
 
+    public static $group = 'Bugster';
+
     /**
      * The columns that should be searched.
      *

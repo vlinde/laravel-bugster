@@ -37,8 +37,15 @@ $ php artisan migrate
 Add function to exception handler found in 'app/Exceptions/Handler.php'
 
 ```php
-$bugster = new \Vlinde\AdvancedBugster\Classes\BugsterLoadBugs();
-$bugster->saveError(Request $request,\Exception $exception); 
+public function renderForConsole($output, \Throwable $e) {
+    $bugster = new BugsterLoadBugs();
+    $bugster->saveError($output, $e, 'TERMINAL');
+}
+
+public function render($request, \Throwable $exception) {
+    $bugster = new BugsterLoadBugs();
+    $bugster->saveError($request,$exception);
+}
 ```
 
 How to move data to SQL

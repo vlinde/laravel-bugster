@@ -1,6 +1,6 @@
 {
     "name": "vlinde/laravel-bugster",
-    "description": ":package_description",
+    "description": "See any errors by category!",
     "license": "MIT",
     "authors": [
         {
