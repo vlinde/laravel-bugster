@@ -60,6 +60,13 @@ How to generate daily stats from the errors
 $ php artisan bugster:generate:stats
 ```
 
+How to parse logs
+Set log paths in config : config/bugster.php
+
+```bash
+$php artisan bugster:generate:errors
+```
+
 How to delete older bugs
 
 ```bash
@@ -73,6 +80,20 @@ You can add these commands to a daily cron
 $schedule->command('bugster:movetosql')->daily('00:30');
 $schedule->command('bugster:generate:stats')->daily('00:45');
 $schedule->command('bugster:delete')->daily('01:00');
+$schedule->command('bugster:generate:errors')->hourly();
+```
+
+## Nova
+Register Bugster tool in NovaServiceProvider
+```php
+use Vlinde\Bugster\Bugster;
+
+public function tools()
+{
+    return [
+        new Bugster();
+       ];
+}
 ```
 
 ## Change log

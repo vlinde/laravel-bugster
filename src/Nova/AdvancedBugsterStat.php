@@ -25,7 +25,7 @@ class AdvancedBugsterStat extends Resource
      */
     public static $title = 'status_code';
 
-    public static $category = 'Bugster';
+    public static $displayInNavigation = false;
 
     /**
      * The columns that should be searched.

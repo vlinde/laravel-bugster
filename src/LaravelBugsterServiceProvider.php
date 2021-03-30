@@ -22,6 +22,10 @@ class LaravelBugsterServiceProvider extends ServiceProvider
         // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         // $this->loadRoutesFrom(__DIR__.'/routes.php');
 
+        $this->loadViewsFrom(
+            __DIR__ . '/../resources/views', 'laravel-bugster'
+        );
+
         $this->publishes([
             __DIR__.'/../config/bugster.php' => config_path('bugster.php'),
         ], 'bugster.config');

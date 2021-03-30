@@ -2,7 +2,35 @@
 
 namespace Vlinde\Bugster;
 
-class Bugster
+use Laravel\Nova\Nova;
+use Laravel\Nova\Tool;
+use Vlinde\Bugster\Nova\AdvancedBugsterDB;
+use Vlinde\Bugster\Nova\AdvancedBugsterLink;
+use Vlinde\Bugster\Nova\AdvancedBugsterStat;
+
+class Bugster extends Tool
 {
-    // Build wonderful things
+    /**
+     * Perform any tasks that need to happen when the tool is booted.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        Nova::resources([
+            AdvancedBugsterDB::class,
+            AdvancedBugsterLink::class,
+            AdvancedBugsterStat::class,
+        ]);
+    }
+
+    /**
+     * Build the view that renders the navigation links for the tool.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function renderNavigation()
+    {
+        return view('laravel-bugster::navigation');
+    }
 }
