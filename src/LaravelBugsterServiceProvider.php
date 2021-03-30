@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Vlinde\Bugster\Console\Commands\DeleteOldBugs;
 use Vlinde\Bugster\Console\Commands\GenerateStats;
 use Vlinde\Bugster\Console\Commands\MoveBugsToSQL;
+use Vlinde\Bugster\Console\Commands\ParseLogs;
 
 class LaravelBugsterServiceProvider extends ServiceProvider
 {
@@ -62,7 +63,8 @@ class LaravelBugsterServiceProvider extends ServiceProvider
         $this->commands([
             DeleteOldBugs::class,
             GenerateStats::class,
-            MoveBugsToSQL::class
+            MoveBugsToSQL::class,
+            ParseLogs::class,
         ]);
     }
 

@@ -7,6 +7,7 @@ use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Resource;
 
+
 class AdvancedBugsterDB extends Resource
 {
     /**
@@ -23,7 +24,7 @@ class AdvancedBugsterDB extends Resource
      */
     public static $title = 'status_code';
 
-    public static $group = 'Bugster';
+    public static $category = 'Bugster';
 
     /**
      * The columns that should be searched.

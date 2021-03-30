@@ -29,6 +29,8 @@ class CreateLaravelBugsterBugsTable extends Migration
             $table->string('debug_mode')->nullable();
             $table->string('ip_address')->nullable();
             $table->text('headers')->nullable();
+            $table->string('date')->nullable();
+            $table->string('hour')->nullable();
             $table->timestamps();
         });
     }
