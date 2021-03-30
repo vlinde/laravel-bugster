@@ -29,6 +29,8 @@ class ParseLogs extends Command
     protected $searchDatePlus;
     protected $searchDatePlusNgnix;
 
+    protected $errorLogs = [];
+
     /**
      * Create a new command instance.
      *
@@ -57,24 +59,37 @@ class ParseLogs extends Command
      */
     public function handle()
     {
+        $this->iterateThroughDirectory(storage_path('logs'));
 
-
-        $this->files = config('bugster.log_paths');
-
-        foreach ($this->files as $category => $args) {
-            if (!$this->validateFile($args['path'], $args['file'])) {
-                $this->errors[$category] = "Category: " . $category . " does not contain the log file specified here: " . $args['path'] . "/" . $args['file'];
-                continue;
-            } else {
+        foreach ($this->errorLogs as $category => $errors) {
+            foreach ($errors as $error) {
                 if ($category != 'ngnix') {
-                    $this->parseLogContents($args['path'], $args['file'], $category, $this->searchDate, $this->searchDatePlus);
+                    $this->parseLogContents($error['path'], $error['name'], $category, $this->searchDate, $this->searchDatePlus);
                 } else {
-                    $this->parseLogContents($args['path'], $args['file'], $category, $this->searchDateNgnix, $this->searchDatePlusNgnix);
+                    $this->parseLogContents($error['path'], $error['name'], $category, $this->searchDateNgnix, $this->searchDatePlusNgnix);
                 }
             }
         }
 
-        $this->showFileErrors();
+        if (config('bugster.enable_custom_log_paths') == true) {
+
+            $this->files = config('bugster.log_paths');
+
+            foreach ($this->files as $category => $args) {
+                if (!$this->validateFile($args['path'], $args['file'])) {
+                    $this->errors[$category] = "Category: " . $category . " does not contain the log file specified here: " . $args['path'] . "/" . $args['file'];
+                    continue;
+                } else {
+                    if ($category != 'ngnix') {
+                        $this->parseLogContents($args['path'], $args['file'], $category, $this->searchDate, $this->searchDatePlus);
+                    } else {
+                        $this->parseLogContents($args['path'], $args['file'], $category, $this->searchDateNgnix, $this->searchDatePlusNgnix);
+                    }
+                }
+            }
+
+            $this->showFileErrors();
+        }
     }
 
     private function parseLogContents($path, $currentFile, $category, $searchDate, $searchDatePlus)
@@ -127,12 +142,12 @@ class ParseLogs extends Command
             ['hour', '=', $args['hour']],
         ])->first();
 
-        if($existingError == null) {
+        if ($existingError == null) {
             $newError = new AdvancedBugsterDB();
 
             $newError->full_url = 'parsed_log';
             $newError->path = 'log';
-            $newError->file = $args['category']. " logs";
+            $newError->file = $args['category'] . " logs";
             $newError->message = $args['error'];
             $newError->trace = $args['stacktrace'];
             $newError->app_name = config('env.APP_NAME');
@@ -142,6 +157,24 @@ class ParseLogs extends Command
             $newError->hour = $args['hour'];
 
             $newError->save();
+        }
+    }
+
+    private function iterateThroughDirectory($path)
+    {
+        $dir = scandir($path);
+
+        foreach ($dir as $file) {
+            if (strpos($file, '.log')) {
+                $aux = $path;
+                $array1 = explode('/', $aux);
+                $array = array_pop($array1);
+                $this->errorLogs[$array][] = ['path' => $path, 'name' => $file];
+            } elseif (strpos($file, '.') >= 0 && strrpos($file, '.') !== false) {
+                continue;
+            } else {
+                $this->iterateThroughDirectory($path . '/' . $file);
+            }
         }
     }
 

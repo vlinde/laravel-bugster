@@ -5,7 +5,8 @@
 [![Build Status][ico-travis]][link-travis]
 [![StyleCI][ico-styleci]][link-styleci]
 
-This is where your description should go. Take a look at [contributing.md](contributing.md) to see a to do list.
+#### Auto detects every log file in the storage/logs folder and sorts all the errors by date.
+#### Update ^1.1.2 custom categories and directories were added ( check config file )
 
 ## Installation
 

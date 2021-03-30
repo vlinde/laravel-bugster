@@ -4,15 +4,12 @@ return [
 
     'redis_connection_name' => 'default',
 
+    'enable_custom_log_paths' => false,
+
     'log_paths' => [
-        'laravel' => [
-            'path' => storage_path('logs'),
-            'file' => 'laravel.log',
+        'example' => [ //category
+            'path' => storage_path('example'), //file path
+            'file' => 'example.log', //file name
         ],
-        'ngnix' => [
-            'path' => storage_path('logs/ngnix'),
-            'file' => 'ngnix-error.log'
-        ],
-//        'custom' => 'etc'
     ],
 ];
