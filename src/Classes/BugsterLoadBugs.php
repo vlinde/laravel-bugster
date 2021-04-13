@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\URL;
+use Vlinde\Bugster\Models\AdvancedBugsterDB;
 
 class BugsterLoadBugs
 {
@@ -32,8 +33,12 @@ class BugsterLoadBugs
                 'ip_address' => $request->ip(),
                 'headers' => json_encode($request->header())
             ];
-            $conn = Redis::connection('Bugster');
-            $conn->set("error_log" . Carbon::now()->toDateString() . ":error_log" . str_replace(":", "-", Carbon::now()->toTimeString()), json_encode($error), 'EX', 172800);
+            if (config('bugster.use_redis') == true) {
+                $conn = Redis::connection('Bugster');
+                $conn->set("error_log" . Carbon::now()->toDateString() . ":error_log" . str_replace(":", "-", Carbon::now()->toTimeString()), json_encode($error), 'EX', 172800);
+            } else {
+                $this->saveErrorToSql($error);
+            }
         }
 
         if ( $saveType == 'TERMINAL' ) {
@@ -54,8 +59,33 @@ class BugsterLoadBugs
                 'ip_address' => 'HOST',
                 'headers' => 'TERMINAL'
             ];
-            $conn = Redis::connection('Bugster');
-            $conn->set("error_log" . Carbon::now()->toDateString() . ":error_log" . str_replace(":", "-", Carbon::now()->toTimeString()), json_encode($error), 'EX', 172800);
+            if (config('bugster.use_redis') == true) {
+                $conn = Redis::connection('Bugster');
+                $conn->set("error_log" . Carbon::now()->toDateString() . ":error_log" . str_replace(":", "-", Carbon::now()->toTimeString()), json_encode($error), 'EX', 172800);
+            } else {
+                $this->saveErrorToSql($error);
+            }
         }
-}
+    }
+
+    public function saveErrorToSql($error) {
+        $bugsterBug = new AdvancedBugsterDB();
+
+        $bugsterBug->full_url = $error['full_url'];
+        $bugsterBug->path = $error['path'];
+        $bugsterBug->method = $error['method'];
+        $bugsterBug->status_code = $error['status_code'];
+        $bugsterBug->line = $error['line'];
+        $bugsterBug->file = $error['file'];
+        $bugsterBug->message = $error['message'];
+        $bugsterBug->trace = $error['trace'];
+        $bugsterBug->user_id = $error['user_id'];
+        $bugsterBug->previous_url = $error['previous_url'];
+        $bugsterBug->app_name = $error['app_env'];
+        $bugsterBug->debug_mode = $error['debug_mode'];
+        $bugsterBug->ip_address = $error['ip_address'];
+        $bugsterBug->headers = '';
+
+        $bugsterBug->save();
+    }
 }

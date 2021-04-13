@@ -2,6 +2,8 @@
 
 return [
 
+    'use_redis' => 'true',
+
     'redis_connection_name' => 'default',
 
     'enable_custom_log_paths' => false,
