@@ -15,12 +15,12 @@ class CreateLaravelBugsterStatsTable extends Migration
     {
         Schema::create('laravel_bugster_stats', function (Blueprint $table) {
             $table->id();
-            $table->date('date');
-            $table->unsignedBigInteger('url_id')->nullable();
-            $table->text('errors');
+            $table->text('generated_at');
+            $table->text('category');
+            $table->mediumText('error');
+            $table->integer('error_count');
+            $table->text('file');
             $table->timestamps();
-
-            $table->foreign('url_id')->references('id')->on('laravel_bugster_links');
         });
     }
 

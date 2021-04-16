@@ -5,6 +5,7 @@ namespace Vlinde\Bugster\Console\Commands;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
+use Vlinde\Bugster\Models\AdvancedBugsterLink;
 
 class DeleteOldBugs extends Command
 {
@@ -47,7 +48,8 @@ class DeleteOldBugs extends Command
     }
 
     public function deleteErrors() {
-        $errors = AdvancedBugsterDB::where([['created_at','<',Carbon::today()->subMonths(2)]])->delete();
+        $errors = AdvancedBugsterDB::where([['created_at','<',Carbon::today()->subMonths(1)]])->delete();
+        $errors = AdvancedBugsterLink::where([['generated_at','<',Carbon::today()->subMonths(1)]])->delete();
     }
 
 

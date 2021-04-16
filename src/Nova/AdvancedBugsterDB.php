@@ -46,7 +46,7 @@ class AdvancedBugsterDB extends Resource
         return [
             ID::make()->sortable(),
 
-            Text::make('Full_url'),
+            Text::make('Last Apparition')->sortable(),
 
             Text::make('Path'),
 

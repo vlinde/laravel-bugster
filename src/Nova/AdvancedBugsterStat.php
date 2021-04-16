@@ -3,6 +3,7 @@
 namespace Vlinde\Bugster\Nova;
 
 use Illuminate\Http\Request;
+use Laravel\Nova\Fields\BelongsToMany;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Number;
@@ -47,11 +48,19 @@ class AdvancedBugsterStat extends Resource
         return [
             ID::make()->sortable(),
 
-            Text::make('Date'),
+            Text::make('Generated At'),
 
-            BelongsTo::make('AdvancedBugsterLink', 'url', 'Vlinde\Bugster\Nova\AdvancedBugsterLink'),
+            Text::make("Category")->sortable(),
 
-            Text::make('Errors')->sortable(),
+            Text::make("Error"),
+
+            Number::make("Error Count"),
+
+            Text::make("File"),
+
+            BelongsToMany::make("Advanced Bugster Links", 'links'),
+
+
         ];
 
     }

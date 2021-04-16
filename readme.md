@@ -74,6 +74,12 @@ How to delete older bugs
 $ php artisan bugster:delete
 ```
 
+How to update bug times
+
+```bash
+$ php artisan bugster:update
+```
+
 You can add these commands to a daily cron
 ```php
 // found in app/Console/Kernel -> schedule
@@ -81,6 +87,7 @@ You can add these commands to a daily cron
 $schedule->command('bugster:movetosql')->daily('00:30');
 $schedule->command('bugster:generate:stats')->daily('00:45');
 $schedule->command('bugster:delete')->daily('01:00');
+$schedule->command('bugster:update')->daily('02:00');
 $schedule->command('bugster:generate:errors')->hourly();
 ```
 

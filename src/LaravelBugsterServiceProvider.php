@@ -7,6 +7,7 @@ use Vlinde\Bugster\Console\Commands\DeleteOldBugs;
 use Vlinde\Bugster\Console\Commands\GenerateStats;
 use Vlinde\Bugster\Console\Commands\MoveBugsToSQL;
 use Vlinde\Bugster\Console\Commands\ParseLogs;
+use Vlinde\Bugster\Console\Commands\UpdateBugs;
 
 class LaravelBugsterServiceProvider extends ServiceProvider
 {
@@ -35,7 +36,9 @@ class LaravelBugsterServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/Database/Migrations/create_laravel_bugster_bugs_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_bugs_table.php'),
             __DIR__ . '/Database/Migrations/create_laravel_bugster_stats_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_stats_table.php'),
-            __DIR__ . '/Database/Migrations/create_laravel_bugster_links_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_links_table.php')
+            __DIR__ . '/Database/Migrations/create_laravel_bugster_links_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_links_table.php'),
+            __DIR__ . '/Database/Migrations/create_bugster_bug_bugster_link_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_bugster_bug_bugster_link_table.php'),
+            __DIR__ . '/Database/Migrations/create_bugster_link_bugster_stat_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_bugster_link_bugster_stat_table.php')
             ], 'migrations');
 
 
@@ -69,6 +72,7 @@ class LaravelBugsterServiceProvider extends ServiceProvider
             GenerateStats::class,
             MoveBugsToSQL::class,
             ParseLogs::class,
+            UpdateBugs::class,
         ]);
     }
 

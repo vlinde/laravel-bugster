@@ -120,7 +120,7 @@ class ParseLogs extends Command
                     $currentError = substr($currentError, strpos($currentError, $currentErrorHour) + 10);
 
                     $this->saveError($args = [
-                        'error' => $currentError,
+                        'error' => substr($currentError, 0, 50),
                         'stacktrace' => $currentErrorStackTrace,
                         'hour' => $currentErrorHour,
                         'date' => $searchDate,

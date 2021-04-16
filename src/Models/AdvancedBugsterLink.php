@@ -12,7 +12,7 @@ class AdvancedBugsterLink extends Model
     }
 
     public function errors() {
-        return $this->hasMany(AdvancedBugsterDB::class);
+        return $this->belongsToMany(AdvancedBugsterDB::class, "bugster_bug_bugster_link", "laravel_bugster_link_id", "laravel_bugster_bug_id" );
     }
 
     protected $table = 'laravel_bugster_links';

@@ -6,7 +6,9 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
+use Vlinde\Bugster\Models\AdvancedBugsterLink;
 
 class BugsterLoadBugs
 {
@@ -22,8 +24,8 @@ class BugsterLoadBugs
                 'method' => $request->method(),
                 'status_code' => $exception->getCode(),
                 'line' => $exception->getLine(),
-                'file' => $exception->getFile(),
-                'message' => strlen($exception->getMessage()) ? $exception->getMessage() : "No message",
+                'file' => Str::after($exception->getFile(), \Request::getHost()),
+                'message' => strlen($exception->getMessage()) ? substr($exception->getMessage(), 0, 50) : "No message",
                 'trace' => $trace,
                 'user_id' => Auth::user() ? Auth::user()->id : 0,
                 'previous_url' => URL::previous(2),
@@ -34,6 +36,7 @@ class BugsterLoadBugs
                 'headers' => json_encode($request->header())
             ];
             if (config('bugster.use_redis') == true) {
+
                 $conn = Redis::connection('Bugster');
                 $conn->set("error_log" . Carbon::now()->toDateString() . ":error_log" . str_replace(":", "-", Carbon::now()->toTimeString()), json_encode($error), 'EX', 172800);
             } else {
@@ -48,8 +51,8 @@ class BugsterLoadBugs
                 'method' => 'TEMRINAL',
                 'status_code' => $exception->getCode(),
                 'line' => $exception->getLine(),
-                'file' => $exception->getFile(),
-                'message' => strlen($exception->getMessage()) ? $exception->getMessage() : "No message",
+                'file' => Str::after($exception->getFile(), \Request::getHost()),
+                'message' => strlen($exception->getMessage()) ? substr($exception->getMessage(), 0, 50) : "No message",
                 'trace' => '',
                 'user_id' => Auth::user() ? Auth::user()->id : 0,
                 'previous_url' => 'TERMINAL',
@@ -87,5 +90,40 @@ class BugsterLoadBugs
         $bugsterBug->headers = '';
 
         $bugsterBug->save();
+
+        $link = $bugsterBug->full_url;
+
+        $this->saveLink($link, $bugsterBug->id);
+
+    }
+
+    public function saveLink($l, $id) {
+        $existingLink = AdvancedBugsterLink::where('url',$l)->first();
+
+        if( $existingLink == null ) {
+            $link = new AdvancedBugsterLink();
+            $link->url = $l;
+
+            try {
+                $link->save();
+
+                if($link->errors->contains($id) == false) {
+                    $link->errors()->attach([$id]);
+
+                    $link->save();
+                }
+            }
+            catch (\Exception $ex) {
+            }
+        }
+        else {
+            $existingLink->last_apparition = Carbon::now();
+
+            if($existingLink->errors->contains($id) == false) {
+                $existingLink->errors()->attach([$id]);
+            }
+
+            $existingLink->save();
+        }
     }
 }

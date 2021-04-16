@@ -49,91 +49,110 @@ class GenerateStats extends Command
     }
 
     public function groupBugs() {
-        $errorArray = [
-            '100','101',
-            '300','201','202','203','204','205',
-            '300','301','302','303','304','305',
-            '400','401','402','403','404','405','406','407','408','409','410','411','412','413','414','415',
-            '500','501','502','503','504','505'
-        ];
 
-        $overallErrorCount = [];
+        $daily = [];
+        $weekly = [];
+        $monthly = [];
+        $dailyErrors = AdvancedBugsterDB::where([
+            ['created_at','<',Carbon::now()],
+            ['created_at','>',Carbon::now()->subDay()]
+        ])->get();
 
-        foreach ( $errorArray as $currentError) {
+        $weeklyErrors = AdvancedBugsterDB::where([
+            ['created_at', '<', Carbon::now()],
+            ['created_at', '>', Carbon::now()->subWeek()]
+        ])->get();
 
-            $DBErrorsCount = AdvancedBugsterDB::where([['created_at', '>', Carbon::now()->subDays(1)]])
-                ->where(function ($query) use ($currentError) {
-                    return $query->where('path', $currentError)
-                        ->orWhere('message', $currentError);
-                })->count();
+        $monthlyErrors = AdvancedBugsterDB::where([
+            ['created_at', '<', Carbon::now()],
+            ['created_at', '>', Carbon::now()->subMonth()]
+        ])->get();
 
-            if( $DBErrorsCount != 0 ) {
-                array_push($overallErrorCount, [$currentError => $DBErrorsCount]);
-            }
+        foreach ($dailyErrors as $error) {
+            if(!isset($daily[$error->message]['count'])) $daily[$error->message]['count'] = 0;
+
+            $daily[$error->message]['count']++;
+            $daily[$error->message]['file'] = $error->file;
+            $daily[$error->message]['link'][] = $error->links()->first()->id;
         }
 
-        if( !empty($overallErrorCount) ) {
-            $stat = new AdvancedBugsterStat();
+        foreach ($weeklyErrors as $error) {
+            if(!isset($weekly[$error->message]['count'])) $weekly[$error->message]['count'] = 0;
 
-            $stat->date = Carbon::today()->toDateString();
-            $stat->url_id = null;
-            $stat->errors = json_encode($overallErrorCount);
+            $weekly[$error->message]['count']++;
+            $weekly[$error->message]['file'] = $error->file;
+            $weekly[$error->message]['link'][] = $error->links()->first()->id;
+        }
+
+        foreach ($monthlyErrors as $error) {
+            if(!isset($monthly[$error->message]['count'])) $monthly[$error->message]['count'] = 0;
+
+            $monthly[$error->message]['count']++;
+            $monthly[$error->message]['file'] = $error->file;
+            $monthly[$error->message]['link'][] = $error->links()->first()->id;
+        }
+
+        foreach ($daily as $key => $value) {
+            $newStat = new AdvancedBugsterStat();
+
+            $newStat->generated_at = Carbon::now();
+            $newStat->category = 'daily';
+            $newStat->error = $key;
+            $newStat->error_count = $value['count'];
+            $newStat->file = $value['file'];
             try {
-                $stat->save();
+                $newStat->save();
+            } catch (\Exception $ex) {
             }
-            catch (\Exception $ex) {
-                error_log(var_dump($ex));
-            }
-        }
 
-        foreach ( AdvancedBugsterDB::where([['created_at','>',Carbon::now()->subDays(1)]])->get() as $error) {
-            $this->saveLink($error->previous_url);
-        }
-
-        foreach( AdvancedBugsterLink::all() as $link ) {
-
-                $DBErrors = AdvancedBugsterDB::select('previous_url', 'path', 'message')
-                    ->where([['created_at', '>', Carbon::yesterday()]])
-                    ->where('previous_url', $link->url)
-                    ->count();
-
-                if ($DBErrors != null) {
-                    $stat = new AdvancedBugsterStat();
-
-                    $stat->date = Carbon::today()->toDateString();
-                    $stat->url_id = $link->id;
-                    $stat->errors = json_encode($DBErrors);
-                    try {
-                        $stat->save();
-                    }
-                    catch (\Exception $ex) {
-                        error_log($ex);
-                    }
+            foreach ($value['link'] as $links) {
+                if(!$newStat->links->contains($links)) {
+                    $newStat->links()->attach([$links]);
                 }
             }
-
-    }
-
-    public function showStats($date = 'today') {
-
-    }
-
-    public function saveLink($l) {
-        $existingLink = AdvancedBugsterLink::where('url',$l)->first();
-
-        if( $existingLink == null ) {
-            $link = new AdvancedBugsterLink();
-            $link->url = $l;
-
-            try {
-                $link->save();
-            }
-            catch (\Exception $ex) {
-            }
+            $newStat->save();
         }
-        else {
-            $existingLink->last_apparition = Carbon::now();
-            $existingLink->save();
+
+        foreach ($weekly as $key => $value) {
+            $newStat = new AdvancedBugsterStat();
+
+            $newStat->generated_at = Carbon::now();
+            $newStat->category = 'weekly';
+            $newStat->error = $key;
+            $newStat->error_count = $value['count'];
+            $newStat->file = $value['file'];
+            try {
+                $newStat->save();
+            } catch (\Exception $ex) {
+            }
+
+            foreach ($value['link'] as $links) {
+                if(!$newStat->links->contains($links)) {
+                    $newStat->links()->attach([$links]);
+                }
+            }
+            $newStat->save();
+        }
+
+        foreach ($monthly as $key => $value) {
+            $newStat = new AdvancedBugsterStat();
+
+            $newStat->generated_at = Carbon::now();
+            $newStat->category = 'monthly';
+            $newStat->error = $key;
+            $newStat->error_count = $value['count'];
+            $newStat->file = $value['file'];
+            try {
+                $newStat->save();
+            } catch (\Exception $ex) {
+            }
+
+            foreach ($value['link'] as $links) {
+                if(!$newStat->links->contains($links)) {
+                    $newStat->links()->attach([$links]);
+                }
+            }
+            $newStat->save();
         }
     }
 
