@@ -32,7 +32,7 @@ class AdvancedBugsterDB extends Resource
      * @var array
      */
     public static $search = [
-        'id', 'message', 'status_code',
+        'id', 'message', 'status_code', 'path', 'file', 'ip_address', 'app_name',
     ];
 
     /**
@@ -46,15 +46,13 @@ class AdvancedBugsterDB extends Resource
         return [
             ID::make()->sortable(),
 
-            Text::make('Last Apparition')->sortable(),
+            Text::make('Category')->sortable(),
 
             Text::make('Path'),
 
-            Text::make('Password'),
+            Text::make('Status_code')->sortable(),
 
-            Text::make('Status_code'),
-
-            Text::make('Line'),
+            Text::make('Line')->sortable(),
 
             Text::make('File'),
 
@@ -62,15 +60,15 @@ class AdvancedBugsterDB extends Resource
 
             Text::make('Trace'),
 
-            Text::make('User_id'),
+            Text::make('User_id')->sortable(),
 
             Text::make('Prevoius_url'),
 
             Text::make('App_name'),
 
-            Text::make('Debug_mode'),
+            Text::make('Debug_mode')->sortable(),
 
-            Text::make('Ip_address'),
+            Text::make('Ip_address')->sortable(),
 
             Text::make('Headers'),
         ];

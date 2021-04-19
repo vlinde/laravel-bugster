@@ -34,7 +34,7 @@ class AdvancedBugsterStat extends Resource
      * @var array
      */
     public static $search = [
-        'id', 'message', 'status_code',
+        'id',  'category', 'error', 'file',
     ];
 
     /**
@@ -48,17 +48,13 @@ class AdvancedBugsterStat extends Resource
         return [
             ID::make()->sortable(),
 
-            Text::make('Generated At'),
+            Text::make('Last updated', 'generated_at')->sortable(),
 
             Text::make("Category")->sortable(),
 
-            Text::make("Error"),
+            Number::make("Error Count")->sortable(),
 
-            Number::make("Error Count"),
-
-            Text::make("File"),
-
-            BelongsToMany::make("Advanced Bugster Links", 'links'),
+            BelongsToMany::make("Advanced Bugster Db", 'bugs'),
 
 
         ];

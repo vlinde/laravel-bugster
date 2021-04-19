@@ -63,6 +63,7 @@ class MoveBugsToSQL extends Command
         $bugsterBug = new AdvancedBugsterDB();
 
         $bugsterBug->full_url = $e->full_url;
+        $bugsterBug->category = "laravel";
         $bugsterBug->path = $e->path;
         $bugsterBug->method = $e->method;
         $bugsterBug->status_code = $e->status_code;

@@ -6,6 +6,7 @@ namespace Vlinde\Bugster\Console\Commands;
 use Carbon\Carbon;
 use Cassandra\Cluster\Builder;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
 
 class ParseLogs extends Command
@@ -63,6 +64,7 @@ class ParseLogs extends Command
 
         foreach ($this->errorLogs as $category => $errors) {
             foreach ($errors as $error) {
+                Log::info("Bugster is currently parsing logs from: ". $error['name']);
                 if ($category != 'ngnix') {
                     $this->parseLogContents($error['path'], $error['name'], $category, $this->searchDate, $this->searchDatePlus);
                 } else {
@@ -94,7 +96,9 @@ class ParseLogs extends Command
 
     private function parseLogContents($path, $currentFile, $category, $searchDate, $searchDatePlus)
     {
+
         $file = file_get_contents($path . '/' . $currentFile);
+        $infoErrorCount = 0;
 
         if (!strpos($file, $searchDate)) {
             return false;
@@ -127,11 +131,14 @@ class ParseLogs extends Command
                         'category' => $category,
                     ]);
 
+                    $infoErrorCount++;
+
                     $first_occurence = $second_occurence;
                     $second_occurence = strpos($file, $searchDate, $first_occurence + 10);
                 }
             }
         }
+        Log::info("Bugster found: ". $infoErrorCount." bugs");
     }
 
     private function saveError($args)
@@ -145,7 +152,10 @@ class ParseLogs extends Command
         if ($existingError == null) {
             $newError = new AdvancedBugsterDB();
 
+            $args['category'] = $args['category'] == 'logs' ? 'laravel' : $args['category'];
+
             $newError->full_url = 'parsed_log';
+            $newError->category = $args['category'];
             $newError->path = 'log';
             $newError->file = $args['category'] . " logs";
             $newError->message = $args['error'];

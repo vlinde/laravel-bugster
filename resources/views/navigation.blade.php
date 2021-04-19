@@ -43,8 +43,4 @@
             Bugster Stats
         </router-link>
     </li>
-
-    <li class="leading-wide mb-4 text-sm">
-        <button class="text-white ml-8 no-underline dim" onclick="{{\Illuminate\Support\Facades\Artisan::call("bugster:generate:stats")}}">Generate Stats!</button>
-    </li>
 </ul>

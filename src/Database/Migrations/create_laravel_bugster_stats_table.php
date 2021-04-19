@@ -17,9 +17,7 @@ class CreateLaravelBugsterStatsTable extends Migration
             $table->id();
             $table->text('generated_at');
             $table->text('category');
-            $table->mediumText('error');
             $table->integer('error_count');
-            $table->text('file');
             $table->timestamps();
         });
     }

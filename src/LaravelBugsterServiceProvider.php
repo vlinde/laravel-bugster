@@ -21,7 +21,7 @@ class LaravelBugsterServiceProvider extends ServiceProvider
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'vlinde');
         // $this->loadViewsFrom(__DIR__.'/../resources/views', 'vlinde');
         // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        // $this->loadRoutesFrom(__DIR__.'/routes.php');
+         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
 
         $this->loadViewsFrom(
             __DIR__ . '/../resources/views', 'laravel-bugster'
@@ -37,8 +37,8 @@ class LaravelBugsterServiceProvider extends ServiceProvider
             __DIR__ . '/Database/Migrations/create_laravel_bugster_bugs_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_bugs_table.php'),
             __DIR__ . '/Database/Migrations/create_laravel_bugster_stats_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_stats_table.php'),
             __DIR__ . '/Database/Migrations/create_laravel_bugster_links_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_links_table.php'),
-            __DIR__ . '/Database/Migrations/create_bugster_bug_bugster_link_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_bugster_bug_bugster_link_table.php'),
-            __DIR__ . '/Database/Migrations/create_bugster_link_bugster_stat_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_bugster_link_bugster_stat_table.php')
+            __DIR__ . '/Database/Migrations/create_bugster_bug_bugster_link_table.php' => database_path('migrations/'.date('Y_m_d_His', time() +1).'_create_bugster_bug_bugster_link_table.php'),
+            __DIR__ . '/Database/Migrations/create_bugster_bug_bugster_stat_table.php' => database_path('migrations/'.date('Y_m_d_His', time() +2).'_create_bugster_bug_bugster_stat_table.php')
             ], 'migrations');
 
 

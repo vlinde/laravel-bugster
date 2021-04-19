@@ -31,7 +31,7 @@ class AdvancedBugsterLink extends Resource
      * @var array
      */
     public static $search = [
-        'id', 'message', 'status_code',
+        'id', 'url',
     ];
 
     /**
@@ -47,7 +47,7 @@ class AdvancedBugsterLink extends Resource
 
             Text::make('Url'),
 
-            Text::make('Last_apparition'),
+            Text::make('Last_apparition')->sortable(),
         ];
 
     }

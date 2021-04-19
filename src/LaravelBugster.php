@@ -17,6 +17,10 @@ class Bugster extends Tool
      */
     public function boot()
     {
+//        dd("test");
+
+        Nova::script("laravel-bugster", __DIR__."/../dist/js/tool.js");
+
         Nova::resources([
             AdvancedBugsterDB::class,
             AdvancedBugsterLink::class,
