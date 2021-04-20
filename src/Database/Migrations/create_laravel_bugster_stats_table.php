@@ -19,9 +19,9 @@ class CreateLaravelBugsterStatsTable extends Migration
             $table->text('generated_at');
             $table->text('category');
             $table->text('file');
-            $table->integer('daily');
-            $table->integer('weekly');
-            $table->integer('monthly');
+            $table->integer('daily')->nullable();
+            $table->integer('weekly')->nullable();
+            $table->integer('monthly')->nullable();
             $table->timestamps();
         });
     }
