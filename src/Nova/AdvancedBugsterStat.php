@@ -48,11 +48,17 @@ class AdvancedBugsterStat extends Resource
         return [
             ID::make()->sortable(),
 
-            Text::make('Last updated', 'generated_at')->sortable(),
+            Text::make("Error"),
 
             Text::make("Category")->sortable(),
 
-            Number::make("Error Count")->sortable(),
+            Text::make("File")->sortable(),
+
+            Number::make("Daily")->sortable(),
+
+            Number::make("Weekly")->sortable(),
+
+            Number::make("Monthly")->sortable(),
 
             BelongsToMany::make("Advanced Bugster Db", 'bugs'),
 

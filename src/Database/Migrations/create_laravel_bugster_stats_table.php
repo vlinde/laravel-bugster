@@ -15,9 +15,13 @@ class CreateLaravelBugsterStatsTable extends Migration
     {
         Schema::create('laravel_bugster_stats', function (Blueprint $table) {
             $table->id();
+            $table->string('error');
             $table->text('generated_at');
             $table->text('category');
-            $table->integer('error_count');
+            $table->text('file');
+            $table->integer('daily');
+            $table->integer('weekly');
+            $table->integer('monthly');
             $table->timestamps();
         });
     }

@@ -58,7 +58,7 @@ class AdvancedBugsterDB extends Resource
 
             Text::make('Message'),
 
-            Text::make('Trace'),
+            Text::make('Trace')->hideFromIndex(),
 
             Text::make('User_id')->sortable(),
 

@@ -50,83 +50,61 @@ class GenerateStats extends Command
 
     public function groupBugs()
     {
-        $dailyErrors = AdvancedBugsterDB::where([
-            ['created_at', '<', Carbon::now()],
-            ['created_at', '>', Carbon::now()->subDay()]
-        ])->get();
+        foreach (AdvancedBugsterDB::get() as $bugs) {
+            if (!AdvancedBugsterStat::where("error", $bugs->message)->exists()) {
+                $newErrorStat = new AdvancedBugsterStat();
+                $newErrorStat->error = $bugs->message;
+                $newErrorStat->category = $bugs->category;
+                $newErrorStat->file = $bugs->file;
 
-        $weeklyErrors = AdvancedBugsterDB::where([
-            ['created_at', '<', Carbon::now()],
-            ['created_at', '>', Carbon::now()->subWeek()]
-        ])->get();
-
-        $monthlyErrors = AdvancedBugsterDB::where([
-            ['created_at', '<', Carbon::now()],
-            ['created_at', '>', Carbon::now()->subMonth()]
-        ])->get();
-
-        foreach ($dailyErrors as $value) {
-            if (!AdvancedBugsterStat::where("category", "daily")->exists()) {
-                $newStat = new AdvancedBugsterStat();
-            } else {
-                $newStat = AdvancedBugsterStat::where("category", "daily")->first();
+                $newErrorStat->save();
             }
-                $newStat->generated_at = Carbon::now();
-                $newStat->category = 'daily';
-                $newStat->error_count = count($dailyErrors);
-                try {
-                    $newStat->save();
-                } catch (\Exception $ex) {
-                    Log::error($ex->getMessage());
-                }
-
-                if (!$newStat->bugs->contains($value->id)) {
-                    $newStat->bugs()->attach([$value->id]);
-                }
-                $newStat->save();
         }
 
-        foreach ($weeklyErrors as $value) {
-            if (!AdvancedBugsterStat::where("category", "weekly")->exists()) {
-                $newStat = new AdvancedBugsterStat();
-            } else {
-                $newStat = AdvancedBugsterStat::where("category", "weekly")->first();
-            }
-                $newStat->generated_at = Carbon::now();
-                $newStat->category = 'weekly';
-                $newStat->error_count = count($weeklyErrors);
-                try {
-                    $newStat->save();
-                } catch (\Exception $ex) {
-                    Log::error($ex->getMessage());
-                }
+//        $dailyErrors = AdvancedBugsterDB::where([
+//            ['created_at', '<', Carbon::now()],
+//            ['created_at', '>', Carbon::now()->subDay()]
+//        ])->get();
+//
+//        $weeklyErrors = AdvancedBugsterDB::where([
+//            ['created_at', '<', Carbon::now()->subDay()],
+//            ['created_at', '>', Carbon::now()->subWeek()]
+//        ])->get();
+//
+//        $monthlyErrors = AdvancedBugsterDB::where([
+//            ['created_at', '<', Carbon::now()->subWeek()],
+//            ['created_at', '>', Carbon::now()->subMonth()]
+//        ])->get();
 
-                if (!$newStat->bugs->contains($value->id)) {
-                    $newStat->bugs()->attach([$value->id]);
-                }
-                $newStat->save();
-        }
+        foreach (AdvancedBugsterStat::get() as $stats) {
+            $stats->daily = AdvancedBugsterDB::where([
+                ['created_at', '<', Carbon::now()],
+                ['created_at', '>', Carbon::now()->subDay()],
+                ['message', '=', $stats->error],
+            ])->count();
 
-        foreach ($monthlyErrors as $value) {
-            if (!AdvancedBugsterStat::where("category", "monthly")->exists()) {
-                $newStat = new AdvancedBugsterStat();
-            } else {
-                $newStat = AdvancedBugsterStat::where("category", "monthly")->first();
-            }
-                $newStat->generated_at = Carbon::now();
-                $newStat->category = 'monthly';
-                $newStat->error_count = count($monthlyErrors);
-                try {
-                    $newStat->save();
-                } catch (\Exception $ex) {
-                    Log::error($ex->getMessage());
-                }
+            $stats->weekly = AdvancedBugsterDB::where([
+                ['created_at', '<', Carbon::now()],
+                ['created_at', '>', Carbon::now()->subWeek()],
+                ['message', '=', $stats->error],
+            ])->count();
 
-                if (!$newStat->bugs->contains($value->id)) {
-                    $newStat->bugs()->attach([$value->id]);
-                }
-                $newStat->save();
+            $monthlyerrors = AdvancedBugsterDB::where([
+                ['created_at', '<', Carbon::now()],
+                ['created_at', '>', Carbon::now()->subMonth()],
+                ['message', '=', $stats->error],
+            ])->get();
+
+            $errorIds = [];
+            foreach ($monthlyerrors as $monthlyerror) $errorIds[] = $monthlyerror->id;
+
+            $stats->monthly = count($monthlyerrors);
+
+            $stats->save();
+
+            $stats->bugs()->sync($errorIds);
+
+            $stats->save();
         }
     }
-
 }
