@@ -66,7 +66,7 @@ class ParseLogs extends Command
             foreach ($errors as $error) {
                 Log::info("Bugster is currently parsing logs from: ". $error['name']);
                 if ($category != 'ngnix') {
-                    $this->parseLogContents($error['path'], $error['name'], $category, $this->searchDate, $this->searchDatePlus);
+                    $this->parseLogContents($error['path'], $error['name'], $category, "[".$this->searchDate, "[".$this->searchDatePlus);
                 } else {
                     $this->parseLogContents($error['path'], $error['name'], $category, $this->searchDateNgnix, $this->searchDatePlusNgnix);
                 }
@@ -100,43 +100,55 @@ class ParseLogs extends Command
         $file = file_get_contents($path . '/' . $currentFile);
         $infoErrorCount = 0;
 
-        if (!strpos($file, $searchDate)) {
-            return false;
-        } else {
-            $first_occurence = strpos($file, $searchDate);
-            $second_occurence = strpos($file, $searchDate, $first_occurence + 9);
-            $late_occurence = strpos($file, $searchDatePlus);
-            if (!$second_occurence) {
-                if (!$late_occurence) {
-                    $error = substr($file, $first_occurence);
-                } else {
-                    $error = substr($file, $first_occurence, $late_occurence - $first_occurence - 1);
-                }
+        try {
+            if (strpos($file, $searchDate) != 0) {
+                return false;
             } else {
-                while ($second_occurence) {
-                    $currentError = substr($file, $first_occurence, $second_occurence - $first_occurence - 1);
-                    $stackTraceLocation = !strpos($currentError, self::STACKTRACE[1]) ? strpos($currentError, self::STACKTRACE[0]) : strpos($currentError, self::STACKTRACE[1]);
+                $first_occurence = strpos($file, $searchDate);
+                $second_occurence = strpos($file, $searchDate, $first_occurence + 9);
+                $late_occurence = strpos($file, $searchDatePlus);
+                if (!$second_occurence) {
+                    if (!$late_occurence) {
+                        $error = substr($file, $first_occurence);
+                    } else {
+                        $error = substr($file, $first_occurence, $late_occurence - $first_occurence - 1);
+                    }
+                } else {
+                    while ($second_occurence) {
+                        $currentError = substr($file, $first_occurence, $second_occurence - $first_occurence - 1);
+                        $stackTraceLocation = !strpos($currentError, self::STACKTRACE[1]) ? strpos($currentError, self::STACKTRACE[0]) : strpos($currentError, self::STACKTRACE[1]);
+                        if ($stackTraceLocation > $first_occurence + 6) {
+                            $currentErrorStackTrace = substr($currentError, $stackTraceLocation, $second_occurence - 1);
+                            $currentError = substr($currentError, 0, $stackTraceLocation - 1);
+                        } else {
+                            $currentErrorStackTrace = "";
+                        }
 
-                    $currentErrorStackTrace = substr($currentError, $stackTraceLocation, $second_occurence - 1);
-                    $currentError = substr($currentError, 0, $stackTraceLocation - 1);
+                        $currentErrorHour = substr($currentError, strpos($currentError, ":") - 2, 8);
+                        $currentError = substr($currentError, strpos($currentError, $currentErrorHour) + 10);
 
-                    $currentErrorHour = substr($currentError, strpos($currentError, ":") - 2, 8);
-                    $currentError = substr($currentError, strpos($currentError, $currentErrorHour) + 10);
+                        $currentErrorEnv = substr($currentError, 0, strpos($currentError,'.'));
+                        $currentErrorType = substr($currentError, strpos($currentError,'.') + 1, strpos($currentError, " ") - strpos($currentError,'.'));
+                        $currentError = substr($currentError, strpos($currentError," "));
 
-                    $this->saveError($args = [
-                        'error' => substr($currentError, 0, 50),
-                        'stacktrace' => $currentErrorStackTrace,
-                        'hour' => $currentErrorHour,
-                        'date' => $searchDate,
-                        'category' => $category,
-                    ]);
+                        $this->saveError($args = [
+                            'error' => substr($currentError, 0, 50),
+                            'type' => $currentErrorType,
+                            'stacktrace' => $currentErrorStackTrace,
+                            'hour' => $currentErrorHour,
+                            'date' => $searchDate,
+                            'category' => $category,
+                        ]);
 
-                    $infoErrorCount++;
+                        $infoErrorCount++;
 
-                    $first_occurence = $second_occurence;
-                    $second_occurence = strpos($file, $searchDate, $first_occurence + 10);
+                        $first_occurence = $second_occurence;
+                        $second_occurence = strpos($file, $searchDate, $first_occurence + 10);
+                    }
                 }
             }
+        } catch (\Exception $ex) {
+//            dd($ex->getMessage(). "   ". $ex->getLine(). "   ". $currentFile);
         }
         Log::info("Bugster found: ". $infoErrorCount." bugs");
     }
@@ -155,6 +167,7 @@ class ParseLogs extends Command
             $args['category'] = $args['category'] == 'logs' ? 'laravel' : $args['category'];
 
             $newError->full_url = 'parsed_log';
+            $newError->type = $args['type'];
             $newError->category = $args['category'];
             $newError->path = 'log';
             $newError->file = $args['category'] . " logs";

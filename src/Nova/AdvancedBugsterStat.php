@@ -8,6 +8,7 @@ use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Resource;
 
 class AdvancedBugsterStat extends Resource
@@ -131,5 +132,16 @@ class AdvancedBugsterStat extends Resource
     public static function authorizedToCreate(Request $request)
     {
         return false;
+    }
+
+    const DEFAULT_INDEX_ORDER = 'daily';
+
+    public static function indexQuery(NovaRequest $request, $query)
+    {
+        $query->when(empty($request->get('orderBy')), function(Builder $q) {
+            $q->getQuery()->orders = [];
+
+            return $q->orderBy(static::DEFAULT_INDEX_ORDER, 'desc');
+        });
     }
 }

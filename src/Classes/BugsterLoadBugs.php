@@ -76,6 +76,7 @@ class BugsterLoadBugs
 
         $bugsterBug->full_url = $error['full_url'];
         $bugsterBug->category = "laravel";
+        $bugsterBug->type = "ERROR";
         $bugsterBug->path = $error['path'];
         $bugsterBug->method = $error['method'];
         $bugsterBug->status_code = $error['status_code'];
