@@ -56,6 +56,7 @@ class GenerateStats extends Command
                 $newErrorStat->error = $bugs->message;
                 $newErrorStat->category = $bugs->category;
                 $newErrorStat->file = $bugs->file;
+                $newErrorStat->generated_at = Carbon::now();
 
                 $newErrorStat->save();
             }
