@@ -6,8 +6,10 @@ use Illuminate\Support\ServiceProvider;
 use Vlinde\Bugster\Console\Commands\DeleteOldBugs;
 use Vlinde\Bugster\Console\Commands\GenerateStats;
 use Vlinde\Bugster\Console\Commands\MoveBugsToSQL;
+use Vlinde\Bugster\Console\Commands\NotifyStatistics;
 use Vlinde\Bugster\Console\Commands\ParseLogs;
 use Vlinde\Bugster\Console\Commands\UpdateBugs;
+use Vlinde\Bugster\Facades\Bugster;
 
 class LaravelBugsterServiceProvider extends ServiceProvider
 {
@@ -18,29 +20,25 @@ class LaravelBugsterServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'vlinde');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'vlinde');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
 
         $this->loadViewsFrom(
             __DIR__ . '/../resources/views', 'laravel-bugster'
         );
 
         $this->publishes([
-            __DIR__.'/../config/bugster.php' => config_path('bugster.php'),
+            __DIR__ . '/../config/bugster.php' => config_path('bugster.php'),
         ], 'bugster.config');
 
         $this->registerCommands();
 
         $this->publishes([
-            __DIR__ . '/Database/Migrations/create_laravel_bugster_bugs_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_bugs_table.php'),
-            __DIR__ . '/Database/Migrations/create_laravel_bugster_stats_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_stats_table.php'),
-            __DIR__ . '/Database/Migrations/create_laravel_bugster_links_table.php' => database_path('migrations/'.date('Y_m_d_His', time()).'_create_laravel_bugster_links_table.php'),
-            __DIR__ . '/Database/Migrations/create_bugster_bug_bugster_link_table.php' => database_path('migrations/'.date('Y_m_d_His', time() +1).'_create_bugster_bug_bugster_link_table.php'),
-            __DIR__ . '/Database/Migrations/create_bugster_bug_bugster_stat_table.php' => database_path('migrations/'.date('Y_m_d_His', time() +2).'_create_bugster_bug_bugster_stat_table.php')
-            ], 'migrations');
-
+            __DIR__ . '/Database/Migrations/create_laravel_bugster_bugs_table.php' => database_path('migrations/' . date('Y_m_d_His') . '_create_laravel_bugster_bugs_table.php'),
+            __DIR__ . '/Database/Migrations/create_laravel_bugster_stats_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 1) . '_create_laravel_bugster_stats_table.php'),
+            __DIR__ . '/Database/Migrations/create_bugster_bug_bugster_stat_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 2) . '_create_bugster_bug_bugster_stat_table.php'),
+            __DIR__ . '/Database/Migrations/remove_laravel_bugster_links_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 3) . '_remove_laravel_bugster_links_table.php'),
+            __DIR__ . '/Database/Migrations/create_laravel_bugster_notifications_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 4) . '_create_laravel_bugster_notifications_table.php')
+        ], 'migrations');
 
         // Publishing is only necessary when using the CLI.
         if ($this->app->runningInConsole()) {
@@ -55,7 +53,7 @@ class LaravelBugsterServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/bugster.php', 'bugster');
+        $this->mergeConfigFrom(__DIR__ . '/../config/bugster.php', 'bugster');
 
         $this->registerCommands();
 
@@ -73,6 +71,7 @@ class LaravelBugsterServiceProvider extends ServiceProvider
             MoveBugsToSQL::class,
             ParseLogs::class,
             UpdateBugs::class,
+            NotifyStatistics::class
         ]);
     }
 
@@ -93,27 +92,8 @@ class LaravelBugsterServiceProvider extends ServiceProvider
      */
     protected function bootForConsole(): void
     {
-        // Publishing the configuration file.
         $this->publishes([
-            __DIR__.'/../config/bugster.php' => config_path('bugster.php'),
+            __DIR__ . '/../config/bugster.php' => config_path('bugster.php'),
         ], 'bugster.config');
-
-        // Publishing the views.
-        /*$this->publishes([
-            __DIR__.'/../resources/views' => base_path('resources/views/vendor/vlinde'),
-        ], 'laravel-bugster.views');*/
-
-        // Publishing assets.
-        /*$this->publishes([
-            __DIR__.'/../resources/assets' => public_path('vendor/vlinde'),
-        ], 'laravel-bugster.views');*/
-
-        // Publishing the translation files.
-        /*$this->publishes([
-            __DIR__.'/../resources/lang' => resource_path('lang/vendor/vlinde'),
-        ], 'laravel-bugster.views');*/
-
-        // Registering package commands.
-        // $this->commands([]);
     }
 }

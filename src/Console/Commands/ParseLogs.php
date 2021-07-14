@@ -1,16 +1,18 @@
 <?php
 
-
 namespace Vlinde\Bugster\Console\Commands;
 
 use Carbon\Carbon;
-use Cassandra\Cluster\Builder;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
 
 class ParseLogs extends Command
 {
+    private const LOGS_PATTERN = '/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}([\+-]\d{4})?\].*/';
+    private const CURRENT_LOG_PATTERN_1 = '/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}([\+-]\d{4})?)\](?:.*?(\w+)\.|.*?)';
+    private const CURRENT_LOG_PATTERN_2 = ': (.*?)( in .*?:[0-9]+)?$/i';
+    private const ALLOWED_LEVELS = ['error'];
+
     /**
      * The name and signature of the console command.
      *
@@ -23,159 +25,130 @@ class ParseLogs extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
-
-    protected $searchDate;
-    protected $searchDateNgnix;
-    protected $searchDatePlus;
-    protected $searchDatePlusNgnix;
-
-    protected $errorLogs = [];
+    protected $description = 'Save in the DB logs from folders';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
+     * @var array
      */
-    public function __construct()
-    {
-        $this->searchDate = Carbon::yesterday()->format('Y-m-d');
-        $this->searchDatePlus = Carbon::today()->format('Y-m-d');
-
-        $this->searchDateNgnix = Carbon::yesterday()->format('Y/m/d');
-        $this->searchDatePlusNgnix = Carbon::today()->format('Y/m/d');
-        parent::__construct();
-    }
-
-    protected $files;
-
-    protected $errors;
-
-    protected const STACKTRACE = ["[stacktrace]", "Stack trace:"];
+    protected $files = [];
 
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         $this->iterateThroughDirectory(storage_path('logs'));
 
-        foreach ($this->errorLogs as $category => $errors) {
+        foreach ($this->files as $category => $errors) {
             foreach ($errors as $error) {
-                Log::info("Bugster is currently parsing logs from: ". $error['name']);
-                if ($category != 'ngnix') {
-                    $this->parseLogContents($error['path'], $error['name'], $category, "[".$this->searchDate, "[".$this->searchDatePlus);
-                } else {
-                    $this->parseLogContents($error['path'], $error['name'], $category, $this->searchDateNgnix, $this->searchDatePlusNgnix);
-                }
+                $this->parseLogContents($error['path'], $error['name'], $category);
             }
         }
 
-        if (config('bugster.enable_custom_log_paths') == true) {
+        if (config('bugster.enable_custom_log_paths') === true) {
 
-            $this->files = config('bugster.log_paths');
+            $customFiles = config('bugster.log_paths');
 
-            foreach ($this->files as $category => $args) {
+            foreach ($customFiles as $category => $args) {
                 if (!$this->validateFile($args['path'], $args['file'])) {
-                    $this->errors[$category] = "Category: " . $category . " does not contain the log file specified here: " . $args['path'] . "/" . $args['file'];
                     continue;
-                } else {
-                    if ($category != 'ngnix') {
-                        $this->parseLogContents($args['path'], $args['file'], $category, $this->searchDate, $this->searchDatePlus);
-                    } else {
-                        $this->parseLogContents($args['path'], $args['file'], $category, $this->searchDateNgnix, $this->searchDatePlusNgnix);
-                    }
                 }
-            }
 
-            $this->showFileErrors();
+                $this->parseLogContents($args['path'], $args['file'], $category);
+            }
         }
     }
 
-    private function parseLogContents($path, $currentFile, $category, $searchDate, $searchDatePlus)
+    private function parseLogContents(string $path, string $currentFile, string $category): void
     {
+        $logs = [];
+        $startDate = Carbon::yesterday()->startOfDay();
+        $endDate = Carbon::yesterday()->endOfDay();
 
-        $file = file_get_contents($path . '/' . $currentFile);
-        $infoErrorCount = 0;
+        $fileContent = file_get_contents($path . '/' . $currentFile);
 
-        try {
-            if (strpos($file, $searchDate) != 0) {
-                return false;
-            } else {
-                $first_occurence = strpos($file, $searchDate);
-                $second_occurence = strpos($file, $searchDate, $first_occurence + 9);
-                $late_occurence = strpos($file, $searchDatePlus);
-                if (!$second_occurence) {
-                    if (!$late_occurence) {
-                        $error = substr($file, $first_occurence);
-                    } else {
-                        $error = substr($file, $first_occurence, $late_occurence - $first_occurence - 1);
-                    }
-                } else {
-                    while ($second_occurence) {
-                        $currentError = substr($file, $first_occurence, $second_occurence - $first_occurence - 1);
-                        $stackTraceLocation = !strpos($currentError, self::STACKTRACE[1]) ? strpos($currentError, self::STACKTRACE[0]) : strpos($currentError, self::STACKTRACE[1]);
-                        if ($stackTraceLocation > $first_occurence + 6) {
-                            $currentErrorStackTrace = substr($currentError, $stackTraceLocation, $second_occurence - 1);
-                            $currentError = substr($currentError, 0, $stackTraceLocation - 1);
-                        } else {
-                            $currentErrorStackTrace = "";
+        preg_match_all(self::LOGS_PATTERN, $fileContent, $headings);
+
+        if (!is_array($headings)) {
+            return;
+        }
+
+        $log_data = preg_split(self::LOGS_PATTERN, $fileContent);
+
+        if ($log_data[0] < 1) {
+            array_shift($log_data);
+        }
+
+        foreach ($headings as $h) {
+            for ($i = 0, $j = count($h); $i < $j; $i++) {
+                foreach (self::ALLOWED_LEVELS as $level) {
+                    if (stripos($h[$i], '.' . $level) || stripos($h[$i], $level . ':')) {
+
+                        preg_match(self::CURRENT_LOG_PATTERN_1 . $level . self::CURRENT_LOG_PATTERN_2, $h[$i], $current);
+
+                        if (!isset($current[4])) {
+                            continue;
                         }
 
-                        $currentErrorHour = substr($currentError, strpos($currentError, ":") - 2, 8);
-                        $currentError = substr($currentError, strpos($currentError, $currentErrorHour) + 10);
+                        $date = Carbon::parse($current[1]);
 
-                        $currentErrorEnv = substr($currentError, 0, strpos($currentError,'.'));
-                        $currentErrorType = substr($currentError, strpos($currentError,'.') + 1, strpos($currentError, " ") - strpos($currentError,'.'));
-                        $currentError = substr($currentError, strpos($currentError," "));
+                        if (!$date->between($startDate, $endDate)) {
+                            continue;
+                        }
 
-                        $this->saveError($args = [
-                            'error' => substr($currentError, 0, 50),
-                            'type' => $currentErrorType,
-                            'stacktrace' => $currentErrorStackTrace,
-                            'hour' => $currentErrorHour,
-                            'date' => $searchDate,
-                            'category' => $category,
-                        ]);
-
-                        $infoErrorCount++;
-
-                        $first_occurence = $second_occurence;
-                        $second_occurence = strpos($file, $searchDate, $first_occurence + 10);
+                        $logs[] = array(
+                            'context' => $current[3],
+                            'level' => $level,
+                            'text' => trim($current[4]),
+                            'stack' => preg_replace("/^\n*/", '', $log_data[$i]),
+                            'date' => trim($current[1])
+                        );
                     }
                 }
             }
-        } catch (\Exception $ex) {
-//            dd($ex->getMessage(). "   ". $ex->getLine(). "   ". $currentFile);
         }
-        Log::info("Bugster found: ". $infoErrorCount." bugs");
+
+        $logs = array_reverse($logs);
+
+        foreach ($logs as $log) {
+            [$date, $hour] = explode(' ', $log['date']);
+
+            $this->saveError([
+                'category' => $category,
+                'type' => $log['level'],
+                'error' => $log['text'],
+                'stacktrace' => null,
+                'context' => $log['context'],
+                'hour' => trim($hour),
+                'date' => trim($date)
+            ]);
+        }
     }
 
-    private function saveError($args)
+    private function saveError(array $args): void
     {
+        $existingError = AdvancedBugsterDB::where('date', $args['date'])
+            ->where('hour', $args['hour'])
+            ->where('message', $args['error'])
+            ->exists();
 
-        $existingError = AdvancedBugsterDB::where([
-            ['date', '=', $args['date']],
-            ['hour', '=', $args['hour']],
-        ])->first();
-
-        if ($existingError == null) {
+        if (!$existingError) {
             $newError = new AdvancedBugsterDB();
 
-            $args['category'] = $args['category'] == 'logs' ? 'laravel' : $args['category'];
+            $args['category'] = $args['category'] === 'logs' ? 'laravel' : $args['category'];
 
-            $newError->full_url = 'parsed_log';
-            $newError->type = $args['type'];
             $newError->category = $args['category'];
+            $newError->type = $args['type'];
+            $newError->full_url = 'parsed_log';
             $newError->path = 'log';
-            $newError->file = $args['category'] . " logs";
+            $newError->status_code = $args['type'] === 'error' ? 500 : null;
+            $newError->file = $args['category'];
             $newError->message = $args['error'];
             $newError->trace = $args['stacktrace'];
             $newError->app_name = config('env.APP_NAME');
-            $newError->debug_mode = config('env.APP_DEBUG');
-
+            $newError->debug_mode = $args['context'];
             $newError->date = $args['date'];
             $newError->hour = $args['hour'];
 
@@ -183,7 +156,7 @@ class ParseLogs extends Command
         }
     }
 
-    private function iterateThroughDirectory($path)
+    private function iterateThroughDirectory(string $path): void
     {
         $dir = scandir($path);
 
@@ -192,7 +165,7 @@ class ParseLogs extends Command
                 $aux = $path;
                 $array1 = explode('/', $aux);
                 $array = array_pop($array1);
-                $this->errorLogs[$array][] = ['path' => $path, 'name' => $file];
+                $this->files[$array][] = ['path' => $path, 'name' => $file];
             } elseif (strpos($file, '.') >= 0 && strrpos($file, '.') !== false) {
                 continue;
             } else {
@@ -201,18 +174,8 @@ class ParseLogs extends Command
         }
     }
 
-    private function validateFile($path, $file)
+    private function validateFile(string $path, string $file): bool
     {
         return is_file($path . '/' . $file);
     }
-
-    private function showFileErrors()
-    {
-        if (!empty($this->errors)) {
-            foreach ($this->errors as $error) {
-                $this->info($error);
-            }
-        }
-    }
-
 }

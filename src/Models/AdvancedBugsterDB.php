@@ -6,10 +6,27 @@ use Illuminate\Database\Eloquent\Model;
 
 class AdvancedBugsterDB extends Model
 {
-
-    public function links() {
-        return $this->belongsToMany(AdvancedBugsterLink::class, "bugster_bug_bugster_link", "laravel_bugster_bug_id", "laravel_bugster_link_id" );
-    }
-
     protected $table = 'laravel_bugster_bugs';
+
+    protected $fillable = [
+        'last_apparition',
+        'category',
+        'type',
+        'full_url',
+        'path',
+        'method',
+        'status_code',
+        'line',
+        'file',
+        'message',
+        'trace',
+        'user_id',
+        'previous_url',
+        'app_name',
+        'debug_mode',
+        'ip_address',
+        'headers',
+        'date',
+        'hour'
+    ];
 }

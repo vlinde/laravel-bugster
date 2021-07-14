@@ -2,130 +2,138 @@
 
 namespace Vlinde\Bugster\Classes;
 
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
-use \Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
-use Vlinde\Bugster\Models\AdvancedBugsterLink;
 
 class BugsterLoadBugs
 {
-    public function saveError($request, \Throwable $exception, $saveType = 'HTTP')
+    public function saveError($request, Throwable $exception, $saveType = 'HTTP'): void
     {
-        if ($saveType == 'HTTP') {
-            $trace = $exception->getTrace();
-            $trace = json_encode(array_slice($trace, 0, 5));
+        $trace = $exception->getTraceAsString();
 
-            $error = [
+        if ($exception instanceof HttpExceptionInterface) {
+            $code = $exception->getStatusCode();
+        } else {
+            $code = $exception->getCode();
+        }
+
+        $message = 'No message';
+
+        if ($exception->getMessage() !== '') {
+            $message = $exception->getMessage();
+        } elseif ($code === 404) {
+            $message = "$code - " . $request->path();
+        }
+
+        $type = null;
+
+        if ($code === 404 || $code === 500) {
+            $type = 'error';
+        }
+
+        $dateTime = now()->toDateTimeString();
+
+        [$date, $hour] = explode(' ', $dateTime);
+        $date = trim($date);
+        $hour = trim($hour);
+
+        if ($saveType === 'HTTP') {
+            $log = [
+                'type' => $type,
                 'full_url' => $request->fullUrl(),
                 'path' => $request->path(),
                 'method' => $request->method(),
-                'status_code' => $exception->getCode(),
+                'status_code' => $code,
                 'line' => $exception->getLine(),
-                'file' => Str::after($exception->getFile(), \Request::getHost()),
-                'message' => strlen($exception->getMessage()) ? substr($exception->getMessage(), 0, 50) : "No message",
+                'file' => Str::after($exception->getFile(), $request->getHost()),
+                'message' => $message,
                 'trace' => $trace,
-                'user_id' => Auth::user() ? Auth::user()->id : 0,
+                'user_id' => Auth::check() ? Auth::id() : 0,
                 'previous_url' => URL::previous(2),
                 'app_env' => config('app.env'),
                 'app_name' => config('env.APP_NAME'),
                 'debug_mode' => config('env.APP_DEBUG'),
                 'ip_address' => $request->ip(),
-                'headers' => json_encode($request->header())
+                'headers' => json_encode($request->header()),
+                'date' => $date,
+                'hour' => $hour
             ];
-            if (config('bugster.use_redis') == true) {
 
-                $conn = Redis::connection('Bugster');
-                $conn->set("error_log" . Carbon::now()->toDateString() . ":error_log" . str_replace(":", "-", Carbon::now()->toTimeString()), json_encode($error), 'EX', 172800);
+            if (config('bugster.use_redis') === true) {
+                $this->saveLogInRedis($log);
             } else {
-                $this->saveErrorToSql($error);
+                $this->saveLogInDB($log);
             }
         }
 
-        if ( $saveType == 'TERMINAL' ) {
-            $error = [
+        if ($saveType === 'TERMINAL') {
+            $log = [
+                'type' => $type,
                 'full_url' => 'TERMINAL',
                 'path' => 'TERMINAL',
                 'method' => 'TEMRINAL',
-                'status_code' => $exception->getCode(),
+                'status_code' => $code,
                 'line' => $exception->getLine(),
-                'file' => Str::after($exception->getFile(), \Request::getHost()),
-                'message' => strlen($exception->getMessage()) ? substr($exception->getMessage(), 0, 50) : "No message",
-                'trace' => '',
-                'user_id' => Auth::user() ? Auth::user()->id : 0,
+                'file' => $exception->getFile(),
+                'message' => $message,
+                'trace' => $trace,
+                'user_id' => Auth::check() ? Auth::id() : 0,
                 'previous_url' => 'TERMINAL',
                 'app_env' => config('app.env'),
                 'app_name' => config('env.APP_NAME'),
                 'debug_mode' => config('env.APP_DEBUG'),
-                'ip_address' => 'HOST',
-                'headers' => 'TERMINAL'
+                'ip_address' => 'localhost',
+                'headers' => 'TERMINAL',
+                'date' => $date,
+                'hour' => $hour
             ];
-            if (config('bugster.use_redis') == true) {
-                $conn = Redis::connection('Bugster');
-                $conn->set("error_log" . Carbon::now()->toDateString() . ":error_log" . str_replace(":", "-", Carbon::now()->toTimeString()), json_encode($error), 'EX', 172800);
+
+            if (config('bugster.use_redis') === true) {
+                $this->saveLogInRedis($log);
             } else {
-                $this->saveErrorToSql($error);
+                $this->saveLogInDB($log);
             }
         }
     }
 
-    public function saveErrorToSql($error) {
-        $bugsterBug = new AdvancedBugsterDB();
+    public function saveLogInDB(array $log): void
+    {
+        $bugster = new AdvancedBugsterDB();
 
-        $bugsterBug->full_url = $error['full_url'];
-        $bugsterBug->category = "laravel";
-        $bugsterBug->type = "ERROR";
-        $bugsterBug->path = $error['path'];
-        $bugsterBug->method = $error['method'];
-        $bugsterBug->status_code = $error['status_code'];
-        $bugsterBug->line = $error['line'];
-        $bugsterBug->file = $error['file'];
-        $bugsterBug->message = $error['message'];
-        $bugsterBug->trace = $error['trace'];
-        $bugsterBug->user_id = $error['user_id'];
-        $bugsterBug->previous_url = $error['previous_url'];
-        $bugsterBug->app_name = $error['app_env'];
-        $bugsterBug->debug_mode = $error['debug_mode'];
-        $bugsterBug->ip_address = $error['ip_address'];
-        $bugsterBug->headers = '';
+        $bugster->full_url = $log['full_url'];
+        $bugster->category = "laravel";
+        $bugster->type = $log['type'];
+        $bugster->path = $log['path'];
+        $bugster->method = $log['method'];
+        $bugster->status_code = $log['status_code'];
+        $bugster->line = $log['line'];
+        $bugster->file = $log['file'];
+        $bugster->message = $log['message'];
+        $bugster->trace = null;
+        $bugster->user_id = $log['user_id'];
+        $bugster->previous_url = $log['previous_url'];
+        $bugster->app_name = $log['app_env'];
+        $bugster->debug_mode = $log['debug_mode'];
+        $bugster->ip_address = $log['ip_address'];
+        $bugster->headers = null;
+        $bugster->date = $log['date'];
+        $bugster->hour = $log['hour'];
 
-        $bugsterBug->save();
-
-        $link = $bugsterBug->full_url;
-
-        $this->saveLink($link, $bugsterBug->id);
-
+        $bugster->save();
     }
 
-    public function saveLink($l, $id) {
-        $existingLink = AdvancedBugsterLink::where('url',$l)->first();
+    public function saveLogInRedis(array $log): void
+    {
+        $conn = Redis::connection(config('bugster.redis_connection_name'));
 
-        if( $existingLink == null ) {
-            $link = new AdvancedBugsterLink();
-            $link->url = $l;
+        $now = str_replace([' ', ':', '-'], '', Carbon::now()->toDateTimeString());
 
-            try {
-                $link->save();
-
-                if($link->errors->contains($id) == false) {
-                    $link->errors()->attach([$id]);
-
-                    $link->save();
-                }
-            }
-            catch (\Exception $ex) {
-            }
-        }
-        else {
-            $existingLink->last_apparition = Carbon::now();
-
-            if($existingLink->errors->contains($id) == false) {
-                $existingLink->errors()->attach([$id]);
-            }
-
-            $existingLink->save();
-        }
+        $conn->set("bugster:$now", json_encode($log), 'EX', 172800);
     }
 }

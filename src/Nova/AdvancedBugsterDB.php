@@ -3,19 +3,23 @@
 namespace Vlinde\Bugster\Nova;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Resource;
-
+use Vlinde\Bugster\Models\AdvancedBugsterDB as AdvancedBugsterDBModel;
 
 class AdvancedBugsterDB extends Resource
 {
+    public static $displayInNavigation = false;
+
     /**
      * The model the resource corresponds to.
      *
      * @var string
      */
-    public static $model = \Vlinde\Bugster\Models\AdvancedBugsterDB::class;
+    public static $model = AdvancedBugsterDBModel::class;
 
     /**
      * The single value that should be used to represent the resource when being displayed.
@@ -23,8 +27,6 @@ class AdvancedBugsterDB extends Resource
      * @var string
      */
     public static $title = 'status_code';
-
-    public static $displayInNavigation = false;
 
     /**
      * The columns that should be searched.
@@ -38,7 +40,7 @@ class AdvancedBugsterDB extends Resource
     /**
      * Get the fields displayed by the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @return array
      */
     public function fields(Request $request)
@@ -46,83 +48,72 @@ class AdvancedBugsterDB extends Resource
         return [
             ID::make()->sortable(),
 
-            Text::make('Category')->sortable(),
+            Text::make('Category')
+                ->sortable(),
+
+            Text::make('Type')
+                ->sortable(),
+
+            Text::make('Status Code')
+                ->sortable(),
 
             Text::make('Path'),
 
-            Text::make('Status_code')->sortable(),
+            Text::make('File')
+                ->hideFromIndex(),
 
-            Text::make('Line')->sortable(),
+            Text::make('Method')
+                ->hideFromIndex(),
 
-            Text::make('File'),
+            Text::make('Line')
+                ->sortable()
+                ->hideFromIndex(),
 
-            Text::make('Message'),
+            Text::make('Message')
+                ->sortable()
+                ->hideFromIndex(),
 
-            Text::make('Trace')->hideFromIndex(),
+            Text::make('Message')
+                ->displayUsing(function ($value) {
+                    return Str::limit($value, 50);
+                })
+                ->onlyOnIndex(),
 
-            Text::make('User_id')->sortable(),
+            Textarea::make('Trace'),
 
-            Text::make('Prevoius_url'),
+            Text::make('User Id')
+                ->sortable()
+                ->hideFromIndex(),
 
-            Text::make('App_name'),
+            Text::make('Previous URL', 'previous_url')
+                ->hideFromIndex(),
 
-            Text::make('Debug_mode')->sortable(),
+            Text::make('App Name')
+                ->hideFromIndex(),
 
-            Text::make('Ip_address')->sortable(),
+            Text::make('Debug Mode')
+                ->sortable()
+                ->hideFromIndex(),
 
-            Text::make('Headers'),
+            Text::make('IP Address', 'ip_address')
+                ->sortable()
+                ->hideFromIndex(),
+
+            Text::make('Headers')
+                ->hideFromIndex(),
+
+            Text::make('Date')
+                ->displayUsing(function ($value) {
+                    return "$this->date $this->hour";
+                })
+                ->hideFromIndex(),
         ];
-
-    }
-
-    /**
-     * Get the cards available for the request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function cards(Request $request)
-    {
-        return [];
-    }
-
-    /**
-     * Get the filters available for the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function filters(Request $request)
-    {
-        return [];
-    }
-
-    /**
-     * Get the lenses available for the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function lenses(Request $request)
-    {
-        return [];
-    }
-
-    /**
-     * Get the actions available for the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function actions(Request $request)
-    {
-        return [];
     }
 
     /**
      * Determine if the current user can update the given resource.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @return bool
      */
     public function authorizedToUpdate(Request $request)
@@ -133,7 +124,7 @@ class AdvancedBugsterDB extends Resource
     /**
      * Determine if the current user can create the given resource.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @return bool
      */
     public static function authorizedToCreate(Request $request)

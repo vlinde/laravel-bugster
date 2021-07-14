@@ -4,9 +4,7 @@ namespace Vlinde\Bugster\Console\Commands;
 
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
-use Vlinde\Bugster\Models\AdvancedBugsterLink;
 use Vlinde\Bugster\Models\AdvancedBugsterStat;
 
 class GenerateStats extends Command
@@ -23,32 +21,19 @@ class GenerateStats extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    protected $description = 'Generate stats for logs';
 
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
-        try {
-            $this->groupBugs();
-        } catch (\Exception $ex) {
-        }
+        $this->groupBugs();
     }
 
-    public function groupBugs()
+    public function groupBugs(): void
     {
         foreach (AdvancedBugsterDB::get() as $bugs) {
             if (!AdvancedBugsterStat::where("error", $bugs->message)->exists()) {
@@ -61,21 +46,6 @@ class GenerateStats extends Command
                 $newErrorStat->save();
             }
         }
-
-//        $dailyErrors = AdvancedBugsterDB::where([
-//            ['created_at', '<', Carbon::now()],
-//            ['created_at', '>', Carbon::now()->subDay()]
-//        ])->get();
-//
-//        $weeklyErrors = AdvancedBugsterDB::where([
-//            ['created_at', '<', Carbon::now()->subDay()],
-//            ['created_at', '>', Carbon::now()->subWeek()]
-//        ])->get();
-//
-//        $monthlyErrors = AdvancedBugsterDB::where([
-//            ['created_at', '<', Carbon::now()->subWeek()],
-//            ['created_at', '>', Carbon::now()->subMonth()]
-//        ])->get();
 
         foreach (AdvancedBugsterStat::get() as $stats) {
             $stats->daily = AdvancedBugsterDB::where([
@@ -97,7 +67,10 @@ class GenerateStats extends Command
             ])->get();
 
             $errorIds = [];
-            foreach ($monthlyerrors as $monthlyerror) $errorIds[] = $monthlyerror->id;
+
+            foreach ($monthlyerrors as $monthlyerror) {
+                $errorIds[] = $monthlyerror->id;
+            }
 
             $stats->monthly = count($monthlyerrors);
 

@@ -1,8 +1,7 @@
 <?php
 
 return [
-
-    'use_redis' => 'true',
+    'use_redis' => true,
 
     'redis_connection_name' => 'default',
 
@@ -14,4 +13,6 @@ return [
             'file' => 'example.log', //file name
         ],
     ],
+
+    'microsoft_team_hook' => env('MS_TEAMS_WEBHOOK_URL')
 ];

@@ -5,10 +5,10 @@ namespace Vlinde\Bugster;
 use Laravel\Nova\Nova;
 use Laravel\Nova\Tool;
 use Vlinde\Bugster\Nova\AdvancedBugsterDB;
-use Vlinde\Bugster\Nova\AdvancedBugsterLink;
+use Vlinde\Bugster\Nova\AdvancedBugsterNotify;
 use Vlinde\Bugster\Nova\AdvancedBugsterStat;
 
-class Bugster extends Tool
+class LaravelBugster extends Tool
 {
     /**
      * Perform any tasks that need to happen when the tool is booted.
@@ -17,14 +17,12 @@ class Bugster extends Tool
      */
     public function boot()
     {
-//        dd("test");
-
-        Nova::script("laravel-bugster", __DIR__."/../dist/js/tool.js");
+        Nova::script("laravel-bugster", __DIR__ . "/../dist/js/tool.js");
 
         Nova::resources([
             AdvancedBugsterDB::class,
-            AdvancedBugsterLink::class,
             AdvancedBugsterStat::class,
+            AdvancedBugsterNotify::class,
         ]);
     }
 

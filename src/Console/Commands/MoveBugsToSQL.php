@@ -2,12 +2,9 @@
 
 namespace Vlinde\Bugster\Console\Commands;
 
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Str;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
-use Vlinde\Bugster\Models\AdvancedBugsterStat;
 
 class MoveBugsToSQL extends Command
 {
@@ -23,109 +20,52 @@ class MoveBugsToSQL extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    protected $description = 'Save logs from redis';
 
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return void
+     * @throws \JsonException
      */
-    public function handle()
+    public function handle(): void
     {
-        try {
-            $this->moveData();
-        }
-        catch (\Exception $ex) {
-        }
-    }
+        $conn = Redis::connection(config('bugster.redis_connection_name'));
 
-    public function moveData() {
-        $conn = Redis::connection('Bugster');
-        $keys = $conn->keys('*');
+        $keys = $conn->keys('bugster*');
+
         foreach ($keys as $key) {
-            $currentKey = $conn->get(Str::after($key,'laravel_database_'));
-            $this->saveError($currentKey);
+            $currentKey = $conn->get($key);
+
+            $this->saveLog($currentKey);
         }
     }
 
-    public function saveError($e) {
-        $e = json_decode($e);
-        $bugsterBug = new AdvancedBugsterDB();
+    public function saveLog(string $log): void
+    {
+        $log = json_decode($log, true, 512, JSON_THROW_ON_ERROR);
 
-        $bugsterBug->full_url = $e->full_url;
-        $bugsterBug->category = "laravel";
-        $bugsterBug->path = $e->path;
-        $bugsterBug->method = $e->method;
-        $bugsterBug->status_code = $e->status_code;
-        $bugsterBug->line = $e->line;
-        $bugsterBug->file = $e->file;
-        $bugsterBug->message = $e->message;
-        $bugsterBug->trace = $e->trace;
-        $bugsterBug->user_id = $e->user_id;
-        $bugsterBug->previous_url = $e->previous_url;
-        $bugsterBug->app_name = $e->app_env;
-        $bugsterBug->debug_mode = $e->debug_mode;
-        $bugsterBug->ip_address = $e->ip_address;
-        $bugsterBug->headers = '';
+        $bugster = new AdvancedBugsterDB();
 
-        try {
-            $bugsterBug->save();
-        }
-        catch (\Exception $ex) {
+        $bugster->full_url = $log['full_url'];
+        $bugster->category = "laravel";
+        $bugster->type = $log['type'];
+        $bugster->path = $log['path'];
+        $bugster->method = $log['method'];
+        $bugster->status_code = $log['status_code'];
+        $bugster->line = $log['line'];
+        $bugster->file = $log['file'];
+        $bugster->message = $log['message'];
+        $bugster->trace = null;
+        $bugster->user_id = $log['user_id'];
+        $bugster->previous_url = $log['previous_url'];
+        $bugster->app_name = $log['app_env'];
+        $bugster->debug_mode = $log['debug_mode'];
+        $bugster->ip_address = $log['ip_address'];
+        $bugster->headers = null;
+        $bugster->date = $log['date'];
+        $bugster->hour = $log['hour'];
 
-        }
+        $bugster->save();
     }
-
-    public function groupBugs() {
-        $errorArray = [
-            '100','101',
-            '300','201','202','203','204','205',
-            '300','301','302','303','304','305',
-            '400','401','402','403','404','405','406','407','408','409','410','411','412','413','414','415',
-            '500','501','502','503','504','505'
-        ];
-
-        $ErrorCountArray = [];
-
-        foreach ( $errorArray as $currentError) {
-            $DBErrorsCount = AdvancedBugsterDB::where([['created_at','<',Carbon::today()],['created_at','>',Carbon::yesterday()]])
-                ->where(function($query) use ($currentError){
-                    return $query->where('path',$currentError)
-                              ->orWhere('message',$currentError);
-                })->count();
-
-            if( $DBErrorsCount != null ) {
-                array_push( $ErrorCountArray, [$currentError => $DBErrorsCount] );
-            }
-        }
-
-        if( !empty($ErrorCountArray) ) {
-            $stat = new AdvancedBugsterStat();
-
-            $stat->date = Carbon::today()->toDateString();
-            $stat->errors = $ErrorCountArray;
-            try {
-                $stat->save();
-            }
-            catch (\Exception $ex) {
-
-            }
-        }
-
-    }
-
-    public function showStats($date = 'today') {
-
-    }
-
 }

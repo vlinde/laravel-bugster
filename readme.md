@@ -41,11 +41,15 @@ Add function to exception handler found in 'app/Exceptions/Handler.php'
 public function renderForConsole($output, \Throwable $e) {
     $bugster = new BugsterLoadBugs();
     $bugster->saveError($output, $e, 'TERMINAL');
+    
+    parent::renderForConsole($output, $e);
 }
 
-public function render($request, \Throwable $exception) {
+public function render($request, \Throwable $e) {
     $bugster = new BugsterLoadBugs();
-    $bugster->saveError($request,$exception);
+    $bugster->saveError($request, $e);
+    
+    return parent::render($request, $e);
 }
 ```
 

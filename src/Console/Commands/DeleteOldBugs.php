@@ -5,7 +5,6 @@ namespace Vlinde\Bugster\Console\Commands;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
-use Vlinde\Bugster\Models\AdvancedBugsterLink;
 
 class DeleteOldBugs extends Command
 {
@@ -21,36 +20,15 @@ class DeleteOldBugs extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    protected $description = 'Delete old logs';
 
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
-        try {
-            $this->deleteErrors();
-        }
-        catch (\Exception $ex) {
-        }
+        AdvancedBugsterDB::whereDate('created_at', '<', Carbon::now()->subMonths())->delete();
     }
-
-    public function deleteErrors() {
-        $errors = AdvancedBugsterDB::where([['created_at','<',Carbon::today()->subMonths(1)]])->delete();
-        $errors = AdvancedBugsterLink::where([['generated_at','<',Carbon::today()->subMonths(1)]])->delete();
-    }
-
-
 }
