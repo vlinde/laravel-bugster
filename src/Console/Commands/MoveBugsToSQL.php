@@ -38,12 +38,23 @@ class MoveBugsToSQL extends Command
             $currentKey = $conn->get($key);
 
             $this->saveLog($currentKey);
+
+            $conn->del($key);
         }
     }
 
     public function saveLog(string $log): void
     {
         $log = json_decode($log, true, 512, JSON_THROW_ON_ERROR);
+
+        $logExists = AdvancedBugsterDB::where('date', $log['date'])
+            ->where('hour', $log['hour'])
+            ->where('message', $log['message'])
+            ->exists();
+
+        if ($logExists) {
+            return;
+        }
 
         $bugster = new AdvancedBugsterDB();
 

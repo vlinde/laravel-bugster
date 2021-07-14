@@ -29,4 +29,14 @@ class AdvancedBugsterDB extends Model
         'date',
         'hour'
     ];
+
+    public function stats()
+    {
+        return $this->belongsToMany(
+            AdvancedBugsterStat::class,
+            'bugster_bug_bugster_stat',
+            'laravel_bugster_bug_id',
+            'laravel_bugster_stat_id'
+        );
+    }
 }

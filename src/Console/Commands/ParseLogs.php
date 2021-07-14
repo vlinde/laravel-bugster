@@ -115,7 +115,7 @@ class ParseLogs extends Command
         foreach ($logs as $log) {
             [$date, $hour] = explode(' ', $log['date']);
 
-            $this->saveError([
+            $this->saveLog([
                 'category' => $category,
                 'type' => $log['level'],
                 'error' => $log['text'],
@@ -127,33 +127,35 @@ class ParseLogs extends Command
         }
     }
 
-    private function saveError(array $args): void
+    private function saveLog(array $log): void
     {
-        $existingError = AdvancedBugsterDB::where('date', $args['date'])
-            ->where('hour', $args['hour'])
-            ->where('message', $args['error'])
+        $logExists = AdvancedBugsterDB::where('date', $log['date'])
+            ->where('hour', $log['hour'])
+            ->where('message', $log['error'])
             ->exists();
 
-        if (!$existingError) {
-            $newError = new AdvancedBugsterDB();
-
-            $args['category'] = $args['category'] === 'logs' ? 'laravel' : $args['category'];
-
-            $newError->category = $args['category'];
-            $newError->type = $args['type'];
-            $newError->full_url = 'parsed_log';
-            $newError->path = 'log';
-            $newError->status_code = $args['type'] === 'error' ? 500 : null;
-            $newError->file = $args['category'];
-            $newError->message = $args['error'];
-            $newError->trace = $args['stacktrace'];
-            $newError->app_name = config('env.APP_NAME');
-            $newError->debug_mode = $args['context'];
-            $newError->date = $args['date'];
-            $newError->hour = $args['hour'];
-
-            $newError->save();
+        if ($logExists) {
+            return;
         }
+
+        $log['category'] = $log['category'] === 'logs' ? 'laravel' : $log['category'];
+
+        $bugster = new AdvancedBugsterDB();
+
+        $bugster->category = $log['category'];
+        $bugster->type = $log['type'];
+        $bugster->full_url = 'parsed_log';
+        $bugster->path = 'log';
+        $bugster->status_code = $log['type'] === 'error' ? 500 : null;
+        $bugster->file = $log['category'];
+        $bugster->message = $log['error'];
+        $bugster->trace = $log['stacktrace'];
+        $bugster->app_name = config('env.APP_NAME');
+        $bugster->debug_mode = $log['context'];
+        $bugster->date = $log['date'];
+        $bugster->hour = $log['hour'];
+
+        $bugster->save();
     }
 
     private function iterateThroughDirectory(string $path): void
