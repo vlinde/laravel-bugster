@@ -61,7 +61,8 @@ class AdvancedBugsterStat extends Resource
                 ->displayUsing(function ($value) {
                     return Str::limit($value, 50);
                 })
-                ->sortable(),
+                ->sortable()
+                ->hideFromDetail(),
 
             Text::make("Category")
                 ->sortable(),
