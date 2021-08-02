@@ -48,23 +48,20 @@ class GenerateStats extends Command
         }
 
         foreach (AdvancedBugsterStat::get() as $stats) {
-            $stats->daily = AdvancedBugsterDB::where([
-                ['created_at', '<', Carbon::now()],
-                ['created_at', '>', Carbon::now()->subDay()],
-                ['message', '=', $stats->error],
-            ])->count();
+            $stats->daily = AdvancedBugsterDB::whereDate('created_at', '<', Carbon::now())
+                ->whereDate('created_at', '>', Carbon::now()->subDay())
+                ->where('message', $stats->error)
+                ->count();
 
-            $stats->weekly = AdvancedBugsterDB::where([
-                ['created_at', '<', Carbon::now()],
-                ['created_at', '>', Carbon::now()->subWeek()],
-                ['message', '=', $stats->error],
-            ])->count();
+            $stats->weekly = AdvancedBugsterDB::whereDate('created_at', '<', Carbon::now())
+                ->whereDate('created_at', '>', Carbon::now()->subWeek())
+                ->where('message', $stats->error)
+                ->count();
 
-            $monthlyerrors = AdvancedBugsterDB::where([
-                ['created_at', '<', Carbon::now()],
-                ['created_at', '>', Carbon::now()->subMonth()],
-                ['message', '=', $stats->error],
-            ])->get();
+            $monthlyerrors = AdvancedBugsterDB::whereDate('created_at', '<', Carbon::now())
+                ->whereDate('created_at', '>', Carbon::now()->subMonth())
+                ->where('message', $stats->error)
+                ->get();
 
             $errorIds = [];
 
