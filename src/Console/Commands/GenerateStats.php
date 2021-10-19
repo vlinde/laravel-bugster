@@ -35,47 +35,49 @@ class GenerateStats extends Command
 
     public function groupBugs(): void
     {
-        foreach (AdvancedBugsterDB::get() as $bugs) {
-            if (!AdvancedBugsterStat::where("error", $bugs->message)->exists()) {
-                $newErrorStat = new AdvancedBugsterStat();
-                $newErrorStat->error = $bugs->message;
-                $newErrorStat->category = $bugs->category;
-                $newErrorStat->file = $bugs->file;
-                $newErrorStat->generated_at = Carbon::now();
+        AdvancedBugsterDB::select('id', 'message', 'category', 'file')
+            ->chunk(1000, function ($logs) {
+                foreach ($logs as $log) {
+                    if (AdvancedBugsterStat::where('error', $log->message)->exists()) {
+                        continue;
+                    }
 
-                $newErrorStat->save();
-            }
-        }
+                    AdvancedBugsterStat::create([
+                        'error' => $log->message,
+                        'category' => $log->category,
+                        'file' => $log->file,
+                        'generated_at' => now()
+                    ]);
+                }
+            });
 
-        foreach (AdvancedBugsterStat::get() as $stats) {
-            $stats->daily = AdvancedBugsterDB::whereDate('created_at', '<', Carbon::now())
-                ->whereDate('created_at', '>', Carbon::now()->subDay())
-                ->where('message', $stats->error)
-                ->count();
+        AdvancedBugsterStat::select('id', 'error', 'daily', 'weekly', 'monthly')
+            ->chunk(1000, function ($stats) {
+                foreach ($stats as $stat) {
+                    $dailyCount = AdvancedBugsterDB::whereDate('created_at', now()->subDay())
+                        ->where('message', $stat->error)
+                        ->count();
 
-            $stats->weekly = AdvancedBugsterDB::whereDate('created_at', '<', Carbon::now())
-                ->whereDate('created_at', '>', Carbon::now()->subWeek())
-                ->where('message', $stats->error)
-                ->count();
+                    $weeklyCount = AdvancedBugsterDB::whereBetween('created_at', [now()->subWeek(), now()->subDay()])
+                        ->where('message', $stat->error)
+                        ->count();
 
-            $monthlyerrors = AdvancedBugsterDB::whereDate('created_at', '<', Carbon::now())
-                ->whereDate('created_at', '>', Carbon::now()->subMonth())
-                ->where('message', $stats->error)
-                ->get();
+                    $monthlyLogsId = AdvancedBugsterDB::select('id')
+                        ->whereBetween('created_at', [now()->subMonth(), now()->subDay()])
+                        ->where('message', $stat->error)
+                        ->pluck('id')
+                        ->toArray();
 
-            $errorIds = [];
+                    $monthlyCount = count($monthlyLogsId);
 
-            foreach ($monthlyerrors as $monthlyerror) {
-                $errorIds[] = $monthlyerror->id;
-            }
+                    $stat->daily = $dailyCount;
+                    $stat->weekly = $weeklyCount;
+                    $stat->monthly = $monthlyCount;
 
-            $stats->monthly = count($monthlyerrors);
+                    $stat->save();
 
-            $stats->save();
-
-            $stats->bugs()->sync($errorIds);
-
-            $stats->save();
-        }
+                    $stat->bugs()->sync($monthlyLogsId);
+                }
+            });
     }
 }

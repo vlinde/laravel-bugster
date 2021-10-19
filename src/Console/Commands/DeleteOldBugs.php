@@ -32,13 +32,24 @@ class DeleteOldBugs extends Command
     {
         $subMonth = Carbon::now()->subMonth();
 
-        $oldLogs = AdvancedBugsterDB::select('id')->whereDate('created_at', '<', $subMonth)->get();
+        AdvancedBugsterDB::select('id')
+            ->whereDate('created_at', '<', $subMonth)
+            ->chunkById(1000, function ($logs) {
+                foreach ($logs as $log) {
+                    $log->stats()->detach();
+                }
 
-        foreach ($oldLogs as $oldLog) {
-            $oldLog->stats()->detach();
-        }
+                $logsId = $logs->pluck('id')->toArray();
 
-        AdvancedBugsterDB::select('id')->whereDate('created_at', '<', $subMonth)->delete();
-        AdvancedBugsterStat::select('id')->whereDate('created_at', '<', $subMonth)->delete();
+                AdvancedBugsterDB::whereIn('id', $logsId)->delete();
+            });
+
+        AdvancedBugsterStat::select('id')
+            ->whereDate('created_at', '<', $subMonth)
+            ->chunkById(1000, function ($stats) {
+                $statsId = $stats->pluck('id')->toArray();
+
+                AdvancedBugsterStat::whereIn('id', $statsId)->delete();
+            });
     }
 }

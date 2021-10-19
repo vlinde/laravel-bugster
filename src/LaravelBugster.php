@@ -33,6 +33,6 @@ class LaravelBugster extends Tool
      */
     public function renderNavigation()
     {
-        return view('laravel-bugster::navigation');
+        return view('bugster::navigation');
     }
 }

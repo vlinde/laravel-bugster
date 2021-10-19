@@ -68,7 +68,7 @@ class MoveBugsToSQL extends Command
         $bugster->file = $log['file'];
         $bugster->message = $log['message'];
         $bugster->trace = null;
-        $bugster->user_id = $log['user_id'];
+        $bugster->user_id = $log['user_id'] ?? null;
         $bugster->previous_url = $log['previous_url'];
         $bugster->app_name = $log['app_env'];
         $bugster->debug_mode = $log['debug_mode'];

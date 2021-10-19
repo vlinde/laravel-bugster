@@ -22,15 +22,11 @@ class LaravelBugsterServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
 
-        $this->loadViewsFrom(
-            __DIR__ . '/../resources/views', 'laravel-bugster'
-        );
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'bugster');
 
         $this->publishes([
             __DIR__ . '/../config/bugster.php' => config_path('bugster.php'),
-        ], 'bugster.config');
-
-        $this->registerCommands();
+        ], 'bugster-config');
 
         $this->publishes([
             __DIR__ . '/Database/Migrations/create_laravel_bugster_bugs_table.php' => database_path('migrations/' . date('Y_m_d_His') . '_create_laravel_bugster_bugs_table.php'),
@@ -38,8 +34,10 @@ class LaravelBugsterServiceProvider extends ServiceProvider
             __DIR__ . '/Database/Migrations/create_bugster_bug_bugster_stat_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 2) . '_create_bugster_bug_bugster_stat_table.php'),
             __DIR__ . '/Database/Migrations/remove_laravel_bugster_links_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 3) . '_remove_laravel_bugster_links_table.php'),
             __DIR__ . '/Database/Migrations/create_laravel_bugster_notifications_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 4) . '_create_laravel_bugster_notifications_table.php'),
-            __DIR__ . '/Database/Migrations/change_laravel_bugster_stats_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 5) . '_change_laravel_bugster_stats_table.php')
-        ], 'migrations');
+            __DIR__ . '/Database/Migrations/change_laravel_bugster_stats_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 5) . '_change_laravel_bugster_stats_table.php'),
+            __DIR__ . '/Database/Migrations/update_error_to_laravel_bugster_stats_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 6) . '_update_error_to_laravel_bugster_stats_table.php'),
+            __DIR__ . '/Database/Migrations/update_fields_to_laravel_bugster_bugs_table.php' => database_path('migrations/' . date('Y_m_d_His', time() + 7) . '_update_fields_to_laravel_bugster_bugs_table.php')
+        ], 'bugster-migrations');
 
         // Publishing is only necessary when using the CLI.
         if ($this->app->runningInConsole()) {
@@ -64,6 +62,16 @@ class LaravelBugsterServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides()
+    {
+        return ['bugster'];
+    }
+
     protected function registerCommands(): void
     {
         $this->commands([
@@ -77,16 +85,6 @@ class LaravelBugsterServiceProvider extends ServiceProvider
     }
 
     /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return ['bugster'];
-    }
-
-    /**
      * Console-specific booting.
      *
      * @return void
@@ -95,6 +93,6 @@ class LaravelBugsterServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../config/bugster.php' => config_path('bugster.php'),
-        ], 'bugster.config');
+        ], 'bugster-config');
     }
 }
