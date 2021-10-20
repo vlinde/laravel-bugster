@@ -47,6 +47,10 @@ class DeleteOldBugs extends Command
         AdvancedBugsterStat::select('id')
             ->whereDate('created_at', '<', $subMonth)
             ->chunkById(1000, function ($stats) {
+                foreach ($stats as $stat) {
+                    $stat->bugs()->detach();
+                }
+
                 $statsId = $stats->pluck('id')->toArray();
 
                 AdvancedBugsterStat::whereIn('id', $statsId)->delete();
