@@ -35,9 +35,15 @@ class MoveBugsToSQL extends Command
         $keys = $conn->keys('bugster*');
 
         foreach ($keys as $key) {
+            if (!$key) {
+                continue;
+            }
+
             $currentKey = $conn->get($key);
 
-            $this->saveLog($currentKey);
+            if ($currentKey !== null) {
+                $this->saveLog($currentKey);
+            }
 
             $conn->del($key);
         }
