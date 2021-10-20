@@ -23,6 +23,8 @@ class BugsterLoadBugs
             $code = $exception->getCode();
         }
 
+        $code = $code === 0 ? 500 : $code;
+
         $message = 'No message';
 
         if ($exception->getMessage() !== '') {
@@ -55,7 +57,7 @@ class BugsterLoadBugs
                 'message' => $message,
                 'trace' => $trace,
                 'user_id' => Auth::check() ? Auth::id() : 0,
-                'previous_url' => URL::previous(2),
+                'previous_url' => URL::previous(),
                 'app_env' => config('app.env'),
                 'app_name' => config('env.APP_NAME'),
                 'debug_mode' => config('env.APP_DEBUG'),
