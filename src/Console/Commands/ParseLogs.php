@@ -67,50 +67,32 @@ class ParseLogs extends Command
         $startDate = Carbon::yesterday()->startOfDay();
         $endDate = Carbon::yesterday()->endOfDay();
 
-        $fileContent = file_get_contents($path . '/' . $currentFile);
+        foreach ($this->getFileContent($path . '/' . $currentFile) as $line) {
+            $level = $this->levelAllowed($line);
 
-        preg_match_all(self::LOGS_PATTERN, $fileContent, $headings);
-
-        if (!is_array($headings)) {
-            return;
-        }
-
-        $log_data = preg_split(self::LOGS_PATTERN, $fileContent);
-
-        if ($log_data[0] < 1) {
-            array_shift($log_data);
-        }
-
-        foreach ($headings as $h) {
-            for ($i = 0, $j = count($h); $i < $j; $i++) {
-                foreach (self::ALLOWED_LEVELS as $level) {
-                    if (stripos($h[$i], '.' . $level) || stripos($h[$i], $level . ':')) {
-
-                        preg_match(self::CURRENT_LOG_PATTERN_1 . $level . self::CURRENT_LOG_PATTERN_2, $h[$i], $current);
-
-                        if (!isset($current[4])) {
-                            continue;
-                        }
-
-                        $date = Carbon::parse($current[1]);
-
-                        if (!$date->between($startDate, $endDate)) {
-                            continue;
-                        }
-
-                        $logs[] = array(
-                            'context' => $current[3],
-                            'level' => $level,
-                            'text' => trim($current[4]),
-                            'stack' => preg_replace("/^\n*/", '', $log_data[$i]),
-                            'date' => trim($current[1])
-                        );
-                    }
-                }
+            if ($level === null) {
+                continue;
             }
-        }
 
-        $logs = array_reverse($logs);
+            preg_match(self::CURRENT_LOG_PATTERN_1 . $level . self::CURRENT_LOG_PATTERN_2, $line, $current);
+
+            if (!isset($current[4])) {
+                continue;
+            }
+
+            $date = Carbon::parse($current[1]);
+
+            if (!$date->between($startDate, $endDate)) {
+                continue;
+            }
+
+            $logs[] = array(
+                'context' => $current[3],
+                'level' => $level,
+                'text' => trim($current[4]),
+                'date' => trim($current[1])
+            );
+        }
 
         foreach ($logs as $log) {
             [$date, $hour] = explode(' ', $log['date']);
@@ -125,6 +107,31 @@ class ParseLogs extends Command
                 'date' => trim($date)
             ]);
         }
+    }
+
+    private function getFileContent(string $filePath): \Generator
+    {
+        $handle = fopen($filePath, "r");
+
+        while (!feof($handle)) {
+            yield fgets($handle);
+        }
+
+        fclose($handle);
+    }
+
+    private function levelAllowed(string $line): ?string
+    {
+        $levelAllowed = null;
+
+        foreach (self::ALLOWED_LEVELS as $level) {
+            if (stripos($line, '.' . $level) || stripos($line, $level . ':')) {
+                $levelAllowed = $level;
+                break;
+            }
+        }
+
+        return $levelAllowed;
     }
 
     private function saveLog(array $log): void
