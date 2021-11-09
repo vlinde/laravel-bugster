@@ -30,13 +30,15 @@ class GenerateStats extends Command
      */
     public function handle(): void
     {
+        set_time_limit(0);
+
         $this->groupBugs();
     }
 
     public function groupBugs(): void
     {
         AdvancedBugsterDB::select('id', 'message', 'category', 'file')
-            ->chunk(1000, function ($logs) {
+            ->chunkById(1000, function ($logs) {
                 foreach ($logs as $log) {
                     if (AdvancedBugsterStat::where('error', $log->message)->exists()) {
                         continue;
@@ -52,18 +54,20 @@ class GenerateStats extends Command
             });
 
         AdvancedBugsterStat::select('id', 'error', 'daily', 'weekly', 'monthly')
-            ->chunk(1000, function ($stats) {
+            ->chunkById(1000, function ($stats) {
                 foreach ($stats as $stat) {
                     $dailyCount = AdvancedBugsterDB::whereDate('created_at', now()->subDay())
                         ->where('message', $stat->error)
                         ->count();
 
-                    $weeklyCount = AdvancedBugsterDB::whereBetween('created_at', [now()->subWeek(), now()->subDay()])
+                    $weeklyCount = AdvancedBugsterDB::whereDate('created_at', '>=', now()->subWeek())
+                        ->whereDate('created_at', '<=', now()->subDay())
                         ->where('message', $stat->error)
                         ->count();
 
                     $monthlyLogsId = AdvancedBugsterDB::select('id')
-                        ->whereBetween('created_at', [now()->subMonth(), now()->subDay()])
+                        ->whereDate('created_at', '>=', now()->subMonth())
+                        ->whereDate('created_at', '<=', now()->subDay())
                         ->where('message', $stat->error)
                         ->pluck('id')
                         ->toArray();

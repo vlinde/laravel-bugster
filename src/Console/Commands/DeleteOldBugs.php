@@ -2,7 +2,6 @@
 
 namespace Vlinde\Bugster\Console\Commands;
 
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
 use Vlinde\Bugster\Models\AdvancedBugsterStat;
@@ -30,7 +29,7 @@ class DeleteOldBugs extends Command
      */
     public function handle(): void
     {
-        $subMonth = Carbon::now()->subMonth();
+        $subMonth = now()->subMonth();
 
         AdvancedBugsterDB::select('id')
             ->whereDate('created_at', '<', $subMonth)
