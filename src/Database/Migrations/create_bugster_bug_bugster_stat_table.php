@@ -19,8 +19,8 @@ class CreateBugsterBugBugsterStatTable extends Migration
             $table->unsignedBigInteger('laravel_bugster_stat_id');
             $table->timestamps();
 
-            $table->foreign("laravel_bugster_bug_id")->references("id")->on("laravel_bugster_bugs");
-            $table->foreign("laravel_bugster_stat_id")->references("id")->on("laravel_bugster_stats");
+            $table->foreign("laravel_bugster_bug_id")->references("id")->on("laravel_bugster_bugs")->onDelete('cascade');
+            $table->foreign("laravel_bugster_stat_id")->references("id")->on("laravel_bugster_stats")->onDelete('cascade');
         });
 
     }
