@@ -40,16 +40,14 @@ class GenerateStats extends Command
         AdvancedBugsterDB::select('id', 'message', 'category', 'file')
             ->chunkById(1000, function ($logs) {
                 foreach ($logs as $log) {
-                    if (AdvancedBugsterStat::where('error', $log->message)->exists()) {
-                        continue;
-                    }
-
-                    AdvancedBugsterStat::create([
+                    AdvancedBugsterStat::updateOrCreate([
                         'error' => $log->message,
-                        'category' => $log->category,
-                        'file' => $log->file,
-                        'generated_at' => now()
-                    ]);
+                    ], [
+                            'category' => $log->category,
+                            'file' => $log->file,
+                            'generated_at' => now()
+                        ]
+                    );
                 }
             });
 
