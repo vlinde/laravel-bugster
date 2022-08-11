@@ -12,6 +12,12 @@
 
 <ul class="list-reset mb-8">
     <li class="leading-wide mb-4 text-sm">
+        <router-link :to="{ name: 'bugster-log-files' }" class="text-white ml-8 no-underline dim">
+            Log Files
+        </router-link>
+    </li>
+
+    <li class="leading-wide mb-4 text-sm">
         <router-link :to="{
                 name: 'index',
                 params: {

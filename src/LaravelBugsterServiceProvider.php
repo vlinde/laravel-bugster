@@ -2,6 +2,7 @@
 
 namespace Vlinde\Bugster;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Vlinde\Bugster\Console\Commands\DeleteOldBugs;
 use Vlinde\Bugster\Console\Commands\GenerateStats;
@@ -10,6 +11,7 @@ use Vlinde\Bugster\Console\Commands\NotifyStatistics;
 use Vlinde\Bugster\Console\Commands\ParseLogs;
 use Vlinde\Bugster\Console\Commands\UpdateBugs;
 use Vlinde\Bugster\Facades\Bugster;
+use Vlinde\Bugster\Http\Middleware\Authorize;
 
 class LaravelBugsterServiceProvider extends ServiceProvider
 {
@@ -20,9 +22,11 @@ class LaravelBugsterServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
-
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'bugster');
+
+        $this->app->booted(function () {
+            $this->routes();
+        });
 
         $this->publishes([
             __DIR__ . '/../config/bugster.php' => config_path('bugster.php'),
@@ -43,6 +47,22 @@ class LaravelBugsterServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->bootForConsole();
         }
+    }
+
+    /**
+     * Register the tool's routes.
+     *
+     * @return void
+     */
+    protected function routes()
+    {
+        if ($this->app->routesAreCached()) {
+            return;
+        }
+
+        Route::middleware(['nova', Authorize::class])
+            ->prefix('nova-vendor/vlinde/bugster')
+            ->group(__DIR__.'/../routes/api.php');
     }
 
     /**
