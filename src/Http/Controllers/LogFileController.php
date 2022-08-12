@@ -65,9 +65,16 @@ class LogFileController extends Controller
                     'name' => $file,
                     'path' => $filePath,
                     'size' => $fileSize,
-                    'download_link' => route('log-files.download', ['file_path' => $filePath])
+                    'download_link' => route('log-files.download', ['file_path' => $filePath]),
+                    'time' => filemtime($filePath)
                 ];
             }
+        }
+
+        if (count($logFiles) > 0) {
+            $logFilesTimes = array_column($logFiles, 'time');
+
+            array_multisort($logFilesTimes, SORT_DESC, $logFiles);
         }
 
         return [

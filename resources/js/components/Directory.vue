@@ -6,11 +6,11 @@
       <div class="flex items-center p-3 border-b border-50">
         <router-link :to="{ name: 'bugster-log-files' }"
                      class="no-underline dim text-90">
-          < Back
+          <h3>< Back</h3>
         </router-link>
       </div>
 
-      <div v-if="files.length > 0" class="flex flex-wrap">
+      <div v-if="files.length > 0" class="flex flex-wrap flex-col">
         <div v-for="file in files" class="p-3 files-card">
           <a :href="file.download_link"
              class="flex justify-between items-center overflow-hidden rounded-lg border border-50 p-4 hover:shadow-md cursor-pointer no-underline text-90"
@@ -33,7 +33,7 @@
           </a>
         </div>
       </div>
-      <div v-else class="flex flex-wrap p-4">
+      <div v-else class="flex flex-wrap flex-col p-4">
         This directory is empty
       </div>
     </div>
@@ -65,7 +65,7 @@ export default {
 
 <style>
 .files-card {
-  width: 25%;
+  width: 100%;
 }
 
 .files-card-icon {

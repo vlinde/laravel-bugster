@@ -7,7 +7,7 @@
         <h3>Custom Logs</h3>
       </div>
 
-      <div class="flex flex-wrap">
+      <div v-if="directories.length > 0" class="flex flex-wrap flex-col">
         <div v-for="directory in directories" class="p-3 files-card">
           <router-link
               :to="{ name: 'bugster-log-files-directory', params: {'directory_path': directory.path, 'directory_name': directory.name} }"
@@ -40,10 +40,13 @@
           </router-link>
         </div>
       </div>
+      <div v-else class="flex flex-wrap flex-col p-4">
+        Empty custom logs
+      </div>
       <div class="flex items-center p-3 border-b border-50">
         <h3>Laravel Logs</h3>
       </div>
-      <div class="flex flex-wrap">
+      <div v-if="files.length > 0" class="flex flex-wrap flex-col">
         <div v-for="file in files" class="p-3 files-card">
           <a :href="file.download_link"
              class="flex justify-between items-center overflow-hidden rounded-lg border border-50 p-4 hover:shadow-md cursor-pointer no-underline text-90"
@@ -65,6 +68,9 @@
             </div>
           </a>
         </div>
+      </div>
+      <div v-else class="flex flex-wrap flex-col p-4">
+        Empty laravel logs
       </div>
     </div>
   </div>
@@ -97,7 +103,7 @@ export default {
 
 <style>
 .files-card {
-  width: 25%;
+  width: 100%;
 }
 
 .files-card-icon {
