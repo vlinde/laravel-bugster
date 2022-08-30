@@ -2,6 +2,7 @@
 
 namespace Vlinde\Bugster\Classes;
 
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 use Carbon\Carbon;
@@ -30,7 +31,7 @@ class BugsterLoadBugs
         if ($exception->getMessage() !== '') {
             $message = $exception->getMessage();
         } elseif ($code === 404) {
-            $message = "$code - " . $request->path();
+            $message = $request->path();
         }
 
         $type = null;
@@ -45,97 +46,92 @@ class BugsterLoadBugs
         $date = trim($date);
         $hour = trim($hour);
 
-        if ($saveType === 'HTTP') {
-            $log = [
-                'type' => $type,
-                'full_url' => $request->fullUrl(),
-                'path' => $request->path(),
-                'method' => $request->method(),
-                'status_code' => $code,
-                'line' => $exception->getLine(),
-                'file' => Str::after($exception->getFile(), $request->getHost()),
-                'message' => $message,
-                'trace' => $trace,
-                'user_id' => Auth::check() ? Auth::id() : 0,
-                'previous_url' => URL::previous(),
-                'app_env' => config('app.env'),
-                'app_name' => config('env.APP_NAME'),
-                'debug_mode' => config('env.APP_DEBUG'),
-                'ip_address' => $request->ip(),
-                'headers' => json_encode($request->header()),
-                'date' => $date,
-                'hour' => $hour
-            ];
-
-            if (config('bugster.use_redis') === true) {
-                $this->saveLogInRedis($log);
-            } else {
-                $this->saveLogInDB($log);
-            }
-        }
+        $log = [
+            'type' => $type,
+            'status_code' => $code,
+            'line' => $exception->getLine(),
+            'message' => $message,
+            'trace' => $trace,
+            'user_id' => Auth::check() ? Auth::id() : 0,
+            'app_env' => config('app.env'),
+            'app_name' => config('env.APP_NAME'),
+            'debug_mode' => config('env.APP_DEBUG'),
+            'date' => $date,
+            'hour' => $hour
+        ];
 
         if ($saveType === 'TERMINAL') {
-            $log = [
-                'type' => $type,
-                'full_url' => 'TERMINAL',
-                'path' => 'TERMINAL',
-                'method' => 'TEMRINAL',
-                'status_code' => $code,
-                'line' => $exception->getLine(),
-                'file' => $exception->getFile(),
-                'message' => $message,
-                'trace' => $trace,
-                'user_id' => Auth::check() ? Auth::id() : 0,
-                'previous_url' => 'TERMINAL',
-                'app_env' => config('app.env'),
-                'app_name' => config('env.APP_NAME'),
-                'debug_mode' => config('env.APP_DEBUG'),
-                'ip_address' => 'localhost',
-                'headers' => 'TERMINAL',
-                'date' => $date,
-                'hour' => $hour
-            ];
-
-            if (config('bugster.use_redis') === true) {
-                $this->saveLogInRedis($log);
-            } else {
-                $this->saveLogInDB($log);
-            }
+            $log['full_url'] = 'TERMINAL';
+            $log['path'] = 'TERMINAL';
+            $log['method'] = 'TERMINAL';
+            $log['file'] = $exception->getFile();
+            $log['previous_url'] = 'TERMINAL';
+            $log['ip_address'] = 'localhost';
+            $log['headers'] = 'TERMINAL';
+        } else {
+            $log['full_url'] = $request->fullUrl();
+            $log['path'] = $request->path();
+            $log['method'] = $request->method();
+            $log['file'] = Str::after($exception->getFile(), $request->getHost());
+            $log['previous_url'] = URL::previous();
+            $log['ip_address'] = $request->ip();
+            $log['headers'] = json_encode($request->header());
         }
-    }
 
-    public function saveLogInDB(array $log): void
-    {
-        $bugster = new AdvancedBugsterDB();
+        $logDriver = config('bugster.log_driver');
 
-        $bugster->full_url = $log['full_url'];
-        $bugster->category = "laravel";
-        $bugster->type = $log['type'];
-        $bugster->path = $log['path'];
-        $bugster->method = $log['method'];
-        $bugster->status_code = $log['status_code'];
-        $bugster->line = $log['line'];
-        $bugster->file = $log['file'];
-        $bugster->message = $log['message'];
-        $bugster->trace = null;
-        $bugster->user_id = $log['user_id'];
-        $bugster->previous_url = $log['previous_url'];
-        $bugster->app_name = $log['app_env'];
-        $bugster->debug_mode = $log['debug_mode'];
-        $bugster->ip_address = $log['ip_address'];
-        $bugster->headers = null;
-        $bugster->date = $log['date'];
-        $bugster->hour = $log['hour'];
-
-        $bugster->save();
+        switch ($logDriver) {
+            case 'redis':
+                $this->saveLogInRedis($log);
+                break;
+            case 'db':
+                $this->saveLogInDB($log);
+                break;
+            case 'file':
+                $this->saveLogInFile($log);
+                break;
+            default:
+                Log::error("Saving log from Bugster failed. Invalid log driver '$logDriver'");
+        }
     }
 
     public function saveLogInRedis(array $log): void
     {
-        $conn = Redis::connection(config('bugster.redis_connection_name'));
+        $redis = Redis::connection(config('bugster.redis_connection_name'));
 
         $now = str_replace([' ', ':', '-'], '', Carbon::now()->toDateTimeString());
 
-        $conn->set("bugster:$now", json_encode($log), 'EX', 172800);
+        $redis->set("bugster:$now", json_encode($log), 'EX', 172800);
+    }
+
+    public function saveLogInDB(array $log): void
+    {
+        AdvancedBugsterDB::create([
+            'full_url' => $log['full_url'],
+            'category' => "laravel",
+            'type' => $log['type'],
+            'path' => $log['path'],
+            'method' => $log['method'],
+            'status_code' => $log['status_code'],
+            'line' => $log['line'],
+            'file' => $log['file'],
+            'message' => $log['message'],
+            'trace' => null,
+            'user_id' => $log['user_id'],
+            'previous_url' => $log['previous_url'],
+            'app_name' => $log['app_env'],
+            'debug_mode' => $log['debug_mode'],
+            'ip_address' => $log['ip_address'],
+            'headers' => null,
+            'date' => $log['date'],
+            'hour' => $log['hour'],
+        ]);
+    }
+
+    public function saveLogInFile(array $log): void
+    {
+        $fullMessage = "{$log['ip_address']} | {$log['method']} | {$log['status_code']} | {$log['message']}";
+
+        Log::channel(config('bugster.log_channel'))->info($fullMessage);
     }
 }
