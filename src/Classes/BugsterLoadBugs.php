@@ -138,7 +138,7 @@ class BugsterLoadBugs
 
     public function saveLogInFile(array $log): void
     {
-        $fullMessage = "{$log['ip_address']} | {$log['method']} | {$log['status_code']} | {$log['previous_url']} | {$log['message']}";
+        $fullMessage = "ip: {$log['ip_address']} | method: {$log['method']} | code: {$log['status_code']} | ref: {$log['previous_url']} | message: {$log['message']}";
 
         Log::channel(config('bugster.log_channel'))->info($fullMessage);
     }
