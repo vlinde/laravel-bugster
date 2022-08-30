@@ -3,6 +3,7 @@
 namespace Vlinde\Bugster\Classes;
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 use Carbon\Carbon;
@@ -69,11 +70,18 @@ class BugsterLoadBugs
             $log['ip_address'] = 'localhost';
             $log['headers'] = 'TERMINAL';
         } else {
+
+            $referel = Request::server('HTTP_REFERER');
+
+            if (empty($referel)) {
+                $referral = 'direct';
+            }
+
             $log['full_url'] = $request->fullUrl();
             $log['path'] = $request->path();
             $log['method'] = $request->method();
             $log['file'] = Str::after($exception->getFile(), $request->getHost());
-            $log['previous_url'] = URL::previous();
+            $log['previous_url'] = $referel;
             $log['ip_address'] = $request->ip();
             $log['headers'] = json_encode($request->header());
         }
@@ -130,7 +138,7 @@ class BugsterLoadBugs
 
     public function saveLogInFile(array $log): void
     {
-        $fullMessage = "{$log['ip_address']} | {$log['method']} | {$log['status_code']} | {$log['message']}";
+        $fullMessage = "{$log['ip_address']} | {$log['method']} | {$log['status_code']} | {$log['previous_url']} | {$log['message']}";
 
         Log::channel(config('bugster.log_channel'))->info($fullMessage);
     }
