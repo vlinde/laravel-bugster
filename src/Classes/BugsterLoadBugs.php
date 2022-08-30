@@ -74,7 +74,7 @@ class BugsterLoadBugs
             $referel = Request::server('HTTP_REFERER');
 
             if (empty($referel)) {
-                $referral = 'direct';
+                $referel = 'direct';
             }
 
             $log['full_url'] = $request->fullUrl();
