@@ -4,6 +4,7 @@ namespace Vlinde\Bugster;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Vlinde\Bugster\Console\Commands\CheckQueuesStatus;
 use Vlinde\Bugster\Console\Commands\DeleteOldBugs;
 use Vlinde\Bugster\Console\Commands\GenerateStats;
 use Vlinde\Bugster\Console\Commands\MoveBugsToSQL;
@@ -100,7 +101,8 @@ class LaravelBugsterServiceProvider extends ServiceProvider
             MoveBugsToSQL::class,
             ParseLogs::class,
             UpdateBugs::class,
-            NotifyStatistics::class
+            NotifyStatistics::class,
+            CheckQueuesStatus::class
         ]);
     }
 
