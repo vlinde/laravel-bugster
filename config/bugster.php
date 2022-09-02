@@ -1,22 +1,28 @@
 <?php
 
 return [
-    'log_driver' => 'redis', // available; redis, db, file (in log channel)
+    // available; redis, db, file
+    'log_driver' => 'redis',
 
+    // Set log channel
     'log_channel' => 'daily',
 
+    // Set the redis connection to save the log in Redis
     'redis_connection_name' => 'default',
 
-    'enable_custom_log_paths' => false, // check custom logs files
+    // check logs from custom logs
+    'enable_custom_log_paths' => false,
 
-    // custom log paths
     'log_paths' => [
-        'example' => [ //category
-            'path' => storage_path('example'), // file path
-            'file' => 'example.log', // file name
+        'example' => [
+            'path' => storage_path('example'),
+            'file' => 'example.log',
         ],
     ],
 
-    // when to notify stats
+    // Redis connection to check if queues are working
+    'redis_connection_for_queues_status' => 'default',
+
+    // Microsoft Teams webhook for notification
     'microsoft_team_hook' => env('MS_TEAMS_WEBHOOK_URL')
 ];
