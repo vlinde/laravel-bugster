@@ -4,8 +4,9 @@ namespace Vlinde\Bugster\Console\Commands;
 
 use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
 use Vlinde\Bugster\Notifications\QueuesStoppedWorking;
 
 class CheckQueuesStatus extends Command
@@ -24,14 +25,19 @@ class CheckQueuesStatus extends Command
     protected $description = 'Check if queues working';
 
     /**
+     * @var Process
+     */
+    private $processObject;
+
+    /**
      * @var string
      */
     private $redisConnection;
 
     /**
-     * @var string
+     * @var Redis
      */
-    private $logChannel;
+    private $redis;
 
     /**
      * Execute the console command.
@@ -40,25 +46,24 @@ class CheckQueuesStatus extends Command
      */
     public function handle(): int
     {
-        $this->redisConnection = config('bugster.redis_connection_for_queues_status');
-        $this->logChannel = config('bugster.log_channel');
+        $this->setProcess();
+
+        $outputLines = $this->getPorcessOutputs();
 
         $queues = $this->getQueues();
 
-        $stoppedQueues = [];
-
-        foreach ($queues as $queue) {
-            $output = exec("ps aux | grep 'artisan queue:work.*$this->redisConnection.*--queue=$queue' | grep -v grep");
-
-            if (empty($output)) {
-                Log::channel($this->logChannel)->debug("Checked queue '$queue' output: empty");
-                $stoppedQueues[] = $queue;
-
-                continue;
+        $workingQueues = [];
+        foreach ($outputLines as $line) {
+            foreach ($queues as $queue) {
+                if (Str::containsAll($line, ["artisan queue:work $this->redisConnection", "--queue=$queue"])) {
+                    $workingQueues[] = $queue;
+                }
             }
-
-            Log::channel($this->logChannel)->debug("Checked queue '$queue' output: $output");
         }
+
+        $workingQueues = array_unique($workingQueues);
+
+        $stoppedQueues = array_diff($queues, $workingQueues);
 
         if (!empty($stoppedQueues)) {
             (new User)
@@ -72,16 +77,36 @@ class CheckQueuesStatus extends Command
         return self::SUCCESS;
     }
 
+    private function setProcess(): void
+    {
+        $this->processObject = new Process(['ps', 'aux']);
+    }
+
+    private function setRedis(): void
+    {
+        $this->redisConnection = config('bugster.redis_connection_for_queues_status');
+        $this->redis = Redis::connection($this->redisConnection);
+    }
+
+    private function getPorcessOutputs(): array
+    {
+        $this->processObject->run();
+
+        $commandOutput = $this->processObject->getOutput();
+
+        return explode(PHP_EOL, $commandOutput);
+    }
+
     private function getQueues(): array
     {
-        $redis = Redis::connection($this->redisConnection);
+        $this->setRedis();
 
-        $queuesGroups = $redis->scan('0', [
+        $queuesGroups = $this->redis->scan('0', [
             'match' => 'queues:*',
             'count' => 10000
         ]);
 
-        $uniqueQueues = [];
+        $queues = [];
 
         foreach ($queuesGroups as $queuesGroup) {
             if (!is_array($queuesGroup)) {
@@ -91,14 +116,10 @@ class CheckQueuesStatus extends Command
             foreach ($queuesGroup as $queue) {
                 $queueName = str_replace(['queues:', ':notify', ':delayed', ':reserved'], '', $queue);
 
-                if (in_array($queueName, $uniqueQueues, true)) {
-                    continue;
-                }
-
-                $uniqueQueues[] = $queueName;
+                $queues[] = $queueName;
             }
         }
 
-        return $uniqueQueues;
+        return array_unique($queues);
     }
 }
