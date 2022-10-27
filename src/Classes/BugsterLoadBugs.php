@@ -31,8 +31,6 @@ class BugsterLoadBugs
 
         if ($exception->getMessage() !== '') {
             $message = $exception->getMessage();
-        } elseif ($code === 404) {
-            $message = $request->path();
         }
 
         $type = null;
@@ -138,7 +136,7 @@ class BugsterLoadBugs
 
     public function saveLogInFile(array $log): void
     {
-        $fullMessage = "ip: {$log['ip_address']} | method: {$log['method']} | code: {$log['status_code']} | ref: {$log['previous_url']} | message: {$log['message']}";
+        $fullMessage = "ip: {$log['ip_address']} | method: {$log['method']} | code: {$log['status_code']} | ref: {$log['previous_url']} | path: {$log['path']} | message: {$log['message']}";
 
         Log::channel(config('bugster.log_channel'))->info($fullMessage);
     }
