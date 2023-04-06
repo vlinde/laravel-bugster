@@ -17,7 +17,7 @@ Nova.booting((Vue, router, store) => {
         },
         {
             name: 'bugster-log-files-directory',
-            path: '/log-files/directory',
+            path: '/log-files/directory/:directory_path/:directory_name',
             component: Directory,
         },
     ])
