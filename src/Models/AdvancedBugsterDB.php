@@ -27,16 +27,6 @@ class AdvancedBugsterDB extends Model
         'ip_address',
         'headers',
         'date',
-        'hour'
+        'hour',
     ];
-
-    public function stats()
-    {
-        return $this->belongsToMany(
-            AdvancedBugsterStat::class,
-            'bugster_bug_bugster_stat',
-            'laravel_bugster_bug_id',
-            'laravel_bugster_stat_id'
-        );
-    }
 }

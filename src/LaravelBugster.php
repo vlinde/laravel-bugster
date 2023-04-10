@@ -6,7 +6,7 @@ use Laravel\Nova\Nova;
 use Laravel\Nova\Tool;
 use Vlinde\Bugster\Nova\AdvancedBugsterDB;
 use Vlinde\Bugster\Nova\AdvancedBugsterNotify;
-use Vlinde\Bugster\Nova\AdvancedBugsterStat;
+use Vlinde\Bugster\Nova\LaravelBugsterStatusCode;
 
 class LaravelBugster extends Tool
 {
@@ -17,12 +17,12 @@ class LaravelBugster extends Tool
      */
     public function boot()
     {
-        Nova::script("laravel-bugster", __DIR__ . "/../dist/js/tool.js");
+        Nova::script('laravel-bugster', __DIR__.'/../dist/js/tool.js');
 
         Nova::resources([
             AdvancedBugsterDB::class,
-            AdvancedBugsterStat::class,
             AdvancedBugsterNotify::class,
+            LaravelBugsterStatusCode::class,
         ]);
     }
 

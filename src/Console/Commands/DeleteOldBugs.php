@@ -4,7 +4,6 @@ namespace Vlinde\Bugster\Console\Commands;
 
 use Illuminate\Console\Command;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
-use Vlinde\Bugster\Models\AdvancedBugsterStat;
 
 class DeleteOldBugs extends Command
 {
@@ -24,8 +23,6 @@ class DeleteOldBugs extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return void
      */
     public function handle(): void
     {
@@ -41,18 +38,6 @@ class DeleteOldBugs extends Command
                 $logsId = $logs->pluck('id')->toArray();
 
                 AdvancedBugsterDB::whereIn('id', $logsId)->delete();
-            });
-
-        AdvancedBugsterStat::select('id')
-            ->whereDate('created_at', '<', $subMonth)
-            ->chunkById(1000, function ($stats) {
-                foreach ($stats as $stat) {
-                    $stat->bugs()->detach();
-                }
-
-                $statsId = $stats->pluck('id')->toArray();
-
-                AdvancedBugsterStat::whereIn('id', $statsId)->delete();
             });
     }
 }

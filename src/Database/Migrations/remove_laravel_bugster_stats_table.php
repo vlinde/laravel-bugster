@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-class RemoveLaravelBugsterLinksTable extends Migration
+class RemoveLaravelBugsterStatsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,8 +12,8 @@ class RemoveLaravelBugsterLinksTable extends Migration
      */
     public function up()
     {
-        Schema::dropIfExists('bugster_bug_bugster_link');
-        Schema::dropIfExists('laravel_bugster_links');
+        Schema::dropIfExists('bugster_bug_bugster_stat');
+        Schema::dropIfExists('laravel_bugster_stats');
     }
 
     /**

@@ -2,30 +2,31 @@
 
 namespace Vlinde\Bugster\Classes;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Request;
-use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Throwable;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
 use Vlinde\Bugster\Models\AdvancedBugsterDB;
 
 class BugsterLoadBugs
 {
-    public function saveError($request, Throwable $exception, $saveType = 'HTTP'): void
+    public function saveError($request, Throwable $exception, ?int $statusCode = null, $saveType = 'HTTP'): void
     {
-        $trace = $exception->getTraceAsString();
+//        if ($exception instanceof HttpExceptionInterface) {
+//            $code = $exception->getStatusCode();
+//        } else {
+//            $code = $exception->getCode();
+//        }
+//
+//        $code = $code === 0 ? 500 : $code;
 
-        if ($exception instanceof HttpExceptionInterface) {
-            $code = $exception->getStatusCode();
-        } else {
-            $code = $exception->getCode();
+        if ($statusCode === null) {
+            $statusCode = 500;
         }
-
-        $code = $code === 0 ? 500 : $code;
 
         $message = 'No message';
 
@@ -35,7 +36,7 @@ class BugsterLoadBugs
 
         $type = null;
 
-        if ($code === 404 || $code === 500) {
+        if ($statusCode === 404 || $statusCode === 500) {
             $type = 'error';
         }
 
@@ -47,16 +48,16 @@ class BugsterLoadBugs
 
         $log = [
             'type' => $type,
-            'status_code' => $code,
+            'status_code' => $statusCode,
             'line' => $exception->getLine(),
             'message' => $message,
-            'trace' => $trace,
+            'trace' => $exception->getTraceAsString(),
             'user_id' => Auth::check() ? Auth::id() : 0,
             'app_env' => config('app.env'),
             'app_name' => config('env.APP_NAME'),
             'debug_mode' => config('env.APP_DEBUG'),
             'date' => $date,
-            'hour' => $hour
+            'hour' => $hour,
         ];
 
         if ($saveType === 'TERMINAL') {
@@ -114,7 +115,7 @@ class BugsterLoadBugs
     {
         AdvancedBugsterDB::create([
             'full_url' => $log['full_url'],
-            'category' => "laravel",
+            'category' => 'laravel',
             'type' => $log['type'],
             'path' => $log['path'],
             'method' => $log['method'],

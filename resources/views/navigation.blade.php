@@ -32,10 +32,10 @@
         <router-link :to="{
                 name: 'index',
                 params: {
-                    resourceName: 'advanced-bugster-stats'
+                    resourceName: 'advanced-bugster-notifies'
                     }
                 }" class="text-white ml-8 no-underline dim">
-            Stats
+            Alerts
         </router-link>
     </li>
 
@@ -43,10 +43,10 @@
         <router-link :to="{
                 name: 'index',
                 params: {
-                    resourceName: 'advanced-bugster-notifies'
+                    resourceName: 'laravel-bugster-status-codes'
                     }
                 }" class="text-white ml-8 no-underline dim">
-            Alerts
+            Status Codes
         </router-link>
     </li>
 </ul>

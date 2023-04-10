@@ -27,8 +27,6 @@ class NotifyStatistics extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return void
      */
     public function handle(): void
     {
@@ -42,12 +40,12 @@ class NotifyStatistics extends Command
             ->groupBy('name')
             ->pluck('value', 'name')
             ->map(function ($statistic) {
-                return (int)$statistic;
+                return (int) $statistic;
             })
             ->toArray();
 
         foreach ($bugestStats as $key => $minValue) {
-            if (!array_key_exists($key, $statistics)) {
+            if (! array_key_exists($key, $statistics)) {
                 continue;
             }
 

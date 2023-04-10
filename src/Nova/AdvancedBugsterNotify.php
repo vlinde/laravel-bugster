@@ -40,7 +40,6 @@ class AdvancedBugsterNotify extends Resource
     /**
      * Get the fields displayed by the resource.
      *
-     * @param Request $request
      * @return array
      */
     public function fields(Request $request)
@@ -55,7 +54,7 @@ class AdvancedBugsterNotify extends Resource
                 ->rules(['required', 'unique:laravel_bugster_notifications,statistic_key']),
 
             Number::make('Min Value')
-                ->rules(['required'])
+                ->rules(['required']),
         ];
     }
 }

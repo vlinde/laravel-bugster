@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\File;
 class LogFileController extends Controller
 {
     private const IGNORED_FILES = [
-        '.', '..', '.gitignore'
+        '.', '..', '.gitignore',
     ];
 
     public function index(Request $request)
@@ -19,7 +19,7 @@ class LogFileController extends Controller
             $path = $request->path;
         }
 
-        if (!File::exists($path)) {
+        if (! File::exists($path)) {
             abort(404);
         }
 
@@ -32,7 +32,7 @@ class LogFileController extends Controller
     {
         $filePath = $request->file_path;
 
-        if (!$filePath || !File::exists($filePath)) {
+        if (! $filePath || ! File::exists($filePath)) {
             abort(404, 'Invalid file path');
         }
 
@@ -52,7 +52,7 @@ class LogFileController extends Controller
             if (is_dir($filePath)) {
                 $directories[] = [
                     'name' => $file,
-                    'path' => $filePath
+                    'path' => $filePath,
                 ];
 
                 continue;
@@ -66,7 +66,7 @@ class LogFileController extends Controller
                     'path' => $filePath,
                     'size' => $fileSize,
                     'download_link' => route('log-files.download', ['file_path' => $filePath]),
-                    'time' => filemtime($filePath)
+                    'time' => filemtime($filePath),
                 ];
             }
         }
@@ -79,7 +79,7 @@ class LogFileController extends Controller
 
         return [
             'directories' => $directories,
-            'files' => $logFiles
+            'files' => $logFiles,
         ];
     }
 }

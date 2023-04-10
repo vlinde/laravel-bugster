@@ -3,9 +3,9 @@
 namespace Vlinde\Bugster\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
-use Illuminate\Notifications\Notification;
 
 class InvalidStatistics extends Notification
 {
@@ -29,9 +29,6 @@ class InvalidStatistics extends Notification
     /**
      * Create a new notification instance.
      *
-     * @param string $statisticKey
-     * @param int $minValue
-     * @param int $currentValue
      * @return void
      */
     public function __construct(string $statisticKey, int $minValue, int $currentValue)

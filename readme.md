@@ -5,7 +5,7 @@
 [![Build Status][ico-travis]][link-travis]
 [![StyleCI][ico-styleci]][link-styleci]
 
-#### Auto detects every log file in the storage/logs folder and sorts all the errors by date.
+#### Auto-detects every log file in the storage/logs folder and sorts all the errors by date.
 #### Update ^1.1.2 custom categories and directories were added ( check config file )
 
 ## Installation
@@ -14,17 +14,6 @@ Via Composer
 
 ``` bash
 $ composer require vlinde/laravel-bugster
-```
-
-Add redis configuration to database.php in config folder.
-Example: 
-```
-'Bugster' => [
-            'host' => env('REDIS_HOST', 'localhost'),
-            'password' => env('REDIS_PASSWORD', NULL),
-            'port' => env('REDIS_PORT', 6379),
-            'database' => env('REDIS_DATABASE','2'), // Modify this number to change the Redis database number
-        ],
 ```
 
 Publish vendor for migrations then migrate
@@ -38,18 +27,22 @@ $ php artisan migrate
 Add function to exception handler found in 'app/Exceptions/Handler.php'
 
 ```php
-public function renderForConsole($output, \Throwable $e) {
+public function renderForConsole($output, Throwable $e) 
+{
     $bugster = new BugsterLoadBugs();
-    $bugster->saveError($output, $e, 'TERMINAL');
+    $bugster->saveError($output, $e, null, 'TERMINAL');
     
     parent::renderForConsole($output, $e);
 }
 
-public function render($request, \Throwable $e) {
-    $bugster = new BugsterLoadBugs();
-    $bugster->saveError($request, $e);
+public function render($request, Throwable $e) 
+{
+    $render = parent::render($request, $e);
+
+    $bugster = new BugsterLoadBugs;
+    $bugster->saveError($request, $e, $render->getStatusCode());
     
-    return parent::render($request, $e);
+    return $render;
 }
 ```
 
@@ -59,40 +52,18 @@ How to move data to SQL
 $ php artisan bugster:movetosql
 ```
 
-How to generate daily stats from the errors
-
-```bash
-$ php artisan bugster:generate:stats
-```
-
-How to parse logs
-Set log paths in config : config/bugster.php
-
-```bash
-$php artisan bugster:generate:errors
-```
-
 How to delete older bugs
 
 ```bash
 $ php artisan bugster:delete
 ```
 
-How to update bug times
-
-```bash
-$ php artisan bugster:update
-```
-
-You can add these commands to a daily cron
+You can add these commands to cron
 ```php
-// found in app/Console/Kernel -> schedule
-
 $schedule->command('bugster:movetosql')->daily('00:30');
-$schedule->command('bugster:generate:stats')->daily('00:45');
 $schedule->command('bugster:delete')->daily('01:00');
-$schedule->command('bugster:update')->daily('02:00');
-$schedule->command('bugster:generate:errors')->hourly();
+$schedule->command('bugster:notify:statistics')->dailyAt('12:00');
+$schedule->command('bugster:count-status-codes')->dailyAt('03:00');
 ```
 
 ## Nova
@@ -103,8 +74,8 @@ use Vlinde\Bugster\Bugster;
 public function tools()
 {
     return [
-        new Bugster();
-       ];
+        new Bugster;
+    ];
 }
 ```
 

@@ -25,7 +25,6 @@ class MoveBugsToSQL extends Command
     /**
      * Execute the console command.
      *
-     * @return void
      * @throws \JsonException
      */
     public function handle(): void
@@ -35,7 +34,7 @@ class MoveBugsToSQL extends Command
         $keys = $conn->keys('bugster*');
 
         foreach ($keys as $key) {
-            if (!$key) {
+            if (! $key) {
                 continue;
             }
 
@@ -65,7 +64,7 @@ class MoveBugsToSQL extends Command
         $bugster = new AdvancedBugsterDB();
 
         $bugster->full_url = $log['full_url'];
-        $bugster->category = "laravel";
+        $bugster->category = 'laravel';
         $bugster->type = $log['type'];
         $bugster->path = $log['path'];
         $bugster->method = $log['method'];

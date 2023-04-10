@@ -15,9 +15,9 @@ class CreateLaravelBugsterBugsTable extends Migration
     {
         Schema::create('laravel_bugster_bugs', function (Blueprint $table) {
             $table->id();
-            $table->text("last_apparition")->nullable();
-            $table->string("category")->nullable();
-            $table->string("type")->nullable();
+            $table->text('last_apparition')->nullable();
+            $table->string('category')->nullable();
+            $table->string('type')->nullable();
             $table->string('full_url');
             $table->string('path')->nullable();
             $table->string('method')->nullable();

@@ -40,7 +40,6 @@ class AdvancedBugsterDB extends Resource
     /**
      * Get the fields displayed by the resource.
      *
-     * @param Request $request
      * @return array
      */
     public function fields(Request $request)
@@ -113,7 +112,6 @@ class AdvancedBugsterDB extends Resource
     /**
      * Determine if the current user can update the given resource.
      *
-     * @param Request $request
      * @return bool
      */
     public function authorizedToUpdate(Request $request)
@@ -124,7 +122,6 @@ class AdvancedBugsterDB extends Resource
     /**
      * Determine if the current user can create the given resource.
      *
-     * @param Request $request
      * @return bool
      */
     public static function authorizedToCreate(Request $request)

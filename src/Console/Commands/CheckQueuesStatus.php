@@ -17,6 +17,7 @@ class CheckQueuesStatus extends Command
      * @var string
      */
     protected $signature = 'queues:check-status';
+
     /**
      * The console command description.
      *
@@ -41,8 +42,6 @@ class CheckQueuesStatus extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return int
      */
     public function handle(): int
     {
@@ -65,7 +64,7 @@ class CheckQueuesStatus extends Command
 
         $stoppedQueues = array_diff($queues, $workingQueues);
 
-        if (!empty($stoppedQueues)) {
+        if (! empty($stoppedQueues)) {
             (new User)
                 ->forceFill([
                     'name' => 'Microsoft Teams',
@@ -103,13 +102,13 @@ class CheckQueuesStatus extends Command
 
         $queuesGroups = $this->redis->scan('0', [
             'match' => 'queues:*',
-            'count' => 10000
+            'count' => 10000,
         ]);
 
         $queues = [];
 
         foreach ($queuesGroups as $queuesGroup) {
-            if (!is_array($queuesGroup)) {
+            if (! is_array($queuesGroup)) {
                 continue;
             }
 

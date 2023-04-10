@@ -18,8 +18,6 @@ class QueuesStoppedWorking extends Notification
 
     /**
      * Create a new notification instance.
-     *
-     * @param array $stoppedQueues
      */
     public function __construct(array $stoppedQueues)
     {
@@ -29,8 +27,7 @@ class QueuesStoppedWorking extends Notification
     /**
      * Get the notification's delivery channels.
      *
-     * @param mixed $notifiable
-     * @return array
+     * @param  mixed  $notifiable
      */
     public function via($notifiable): array
     {
@@ -39,7 +36,7 @@ class QueuesStoppedWorking extends Notification
 
     public function toMicrosoftTeams($notifiable)
     {
-        $this->stoppedQueues = array_map(function($stoppedQueue) {
+        $this->stoppedQueues = array_map(function ($stoppedQueue) {
             return "**$stoppedQueue**";
         }, $this->stoppedQueues);
 
@@ -47,7 +44,7 @@ class QueuesStoppedWorking extends Notification
             ->to(config('bugster.microsoft_team_hook'))
             ->type('warning')
             ->title('Queues have stopped working')
-            ->content('The following queue(s) do not work: ' . implode(', ', $this->stoppedQueues), ['section' => 1])
+            ->content('The following queue(s) do not work: '.implode(', ', $this->stoppedQueues), ['section' => 1])
             ->content('Restart them from Forge', ['section' => 2])
             ->button('Forge', 'https://forge.laravel.com/servers');
     }

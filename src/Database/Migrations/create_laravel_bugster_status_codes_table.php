@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateLaravelBugsterLinksTable extends Migration
+class CreateLaravelBugsterStatusCodesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,12 @@ class CreateLaravelBugsterLinksTable extends Migration
      */
     public function up()
     {
-        Schema::create('laravel_bugster_links', function (Blueprint $table) {
+        Schema::create('laravel_bugster_status_codes', function (Blueprint $table) {
             $table->id();
-            $table->string('url');
-            $table->string('last_apparition')->nullable();
+            $table->string('display_name');
+            $table->integer('code');
+            $table->integer('count');
+            $table->date('date');
             $table->timestamps();
         });
     }
@@ -28,6 +30,6 @@ class CreateLaravelBugsterLinksTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('laravel_bugster_links');
+        Schema::dropIfExists('laravel_bugster_status_codes');
     }
 }
