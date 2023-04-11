@@ -1,6 +1,6 @@
 import LogFile from "./components/LogFile";
 import Directory from "./components/Directory";
-import Chart from "./components/Chart";
+import StatusCodesChart from "./components/StatusCodesChart";
 
 Nova.booting((Vue, router, store) => {
     router.addRoutes([
@@ -16,8 +16,8 @@ Nova.booting((Vue, router, store) => {
         },
         {
             name: 'bugster-status-codes-chart',
-            path: '/status-codes-chart/:code/:display_name',
-            component: Chart,
+            path: '/status-codes-chart',
+            component: StatusCodesChart,
         },
     ])
 });

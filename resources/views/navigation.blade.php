@@ -19,9 +19,9 @@
 
     <li class="leading-wide mb-4 text-sm">
         <router-link :to="{
-                name: 'index',
-                params: {
-                    resourceName: 'advanced-bugster-d-bs'
+                    name: 'index',
+                    params: {
+                        resourceName: 'advanced-bugster-d-bs'
                     }
                 }" class="text-white ml-8 no-underline dim">
             Logs
@@ -30,9 +30,9 @@
 
     <li class="leading-wide mb-4 text-sm">
         <router-link :to="{
-                name: 'index',
-                params: {
-                    resourceName: 'advanced-bugster-notifies'
+                    name: 'index',
+                    params: {
+                        resourceName: 'advanced-bugster-notifies'
                     }
                 }" class="text-white ml-8 no-underline dim">
             Alerts
@@ -40,12 +40,7 @@
     </li>
 
     <li class="leading-wide mb-4 text-sm">
-        <router-link :to="{
-                name: 'index',
-                params: {
-                    resourceName: 'laravel-bugster-status-codes'
-                    }
-                }" class="text-white ml-8 no-underline dim">
+        <router-link :to="{ name: 'bugster-status-codes-chart' }" class="text-white ml-8 no-underline dim">
             Status Codes
         </router-link>
     </li>

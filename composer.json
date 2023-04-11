@@ -1,55 +1,55 @@
 {
-  "name": "vlinde/laravel-bugster",
-  "description": "See any errors by category!",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Pescaru Andrei Alexandru",
-      "email": "pescaru.andrei@vlinde.com"
-    }
-  ],
-  "homepage": "https://github.com/vlinde/laravel-bugster",
-  "keywords": [
-    "Laravel",
-    "Laravel-Bugster"
-  ],
-  "require": {
-    "illuminate/support": "~6|~7|~8|~9",
-    "laravel/nova": "^2.7|^3.0",
-    "laravel-notification-channels/microsoft-teams": "^1.1.3",
-    "vlinde/nova-statistics": "^1.0"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "~9.0"
-  },
-  "repositories": [
-    {
-      "type": "composer",
-      "url": "https://nova.laravel.com"
+    "name": "vlinde/laravel-bugster",
+    "description": "See any errors by category!",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pescaru Andrei Alexandru",
+            "email": "pescaru.andrei@vlinde.com"
+        }
+    ],
+    "homepage": "https://github.com/vlinde/laravel-bugster",
+    "keywords": [
+        "Laravel",
+        "Laravel-Bugster"
+    ],
+    "require": {
+        "illuminate/support": "~6|~7|~8|~9",
+        "laravel/nova": "^2.7|^3.0",
+        "laravel-notification-channels/microsoft-teams": "^1.1.3",
+        "vlinde/nova-statistics": "^1.0"
     },
-    {
-      "type": "composer",
-      "url": "https://packages.vlinde.com"
+    "require-dev": {
+        "phpunit/phpunit": "~9.0"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://nova.laravel.com"
+        },
+        {
+            "type": "composer",
+            "url": "https://packages.vlinde.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Vlinde\\Bugster\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Vlinde\\Bugster\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Vlinde\\Bugster\\LaravelBugsterServiceProvider"
+            ],
+            "aliases": {
+                "Bugster": "Vlinde\\Bugster\\Facades\\Bugster"
+            }
+        }
     }
-  ],
-  "autoload": {
-    "psr-4": {
-      "Vlinde\\Bugster\\": "src"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Vlinde\\Bugster\\Tests\\": "tests"
-    }
-  },
-  "extra": {
-    "laravel": {
-      "providers": [
-        "Vlinde\\Bugster\\LaravelBugsterServiceProvider"
-      ],
-      "aliases": {
-        "Bugster": "Vlinde\\Bugster\\Facades\\Bugster"
-      }
-    }
-  }
 }

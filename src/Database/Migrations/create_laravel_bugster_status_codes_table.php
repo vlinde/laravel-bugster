@@ -20,6 +20,8 @@ class CreateLaravelBugsterStatusCodesTable extends Migration
             $table->integer('count');
             $table->date('date');
             $table->timestamps();
+
+            $table->index(['date']);
         });
     }
 
