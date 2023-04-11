@@ -15,4 +15,9 @@ class LaravelBugsterStatusCode extends Model
     protected $casts = [
         'date' => 'date',
     ];
+
+    public function getStatusCodeTextAttribute(): string
+    {
+        return "$this->code ($this->display_name)";
+    }
 }

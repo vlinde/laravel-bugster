@@ -6,7 +6,6 @@ use Laravel\Nova\Nova;
 use Laravel\Nova\Tool;
 use Vlinde\Bugster\Nova\AdvancedBugsterDB;
 use Vlinde\Bugster\Nova\AdvancedBugsterNotify;
-use Vlinde\Bugster\Nova\LaravelBugsterStatusCode;
 
 class LaravelBugster extends Tool
 {
@@ -22,7 +21,6 @@ class LaravelBugster extends Tool
         Nova::resources([
             AdvancedBugsterDB::class,
             AdvancedBugsterNotify::class,
-            LaravelBugsterStatusCode::class,
         ]);
     }
 
