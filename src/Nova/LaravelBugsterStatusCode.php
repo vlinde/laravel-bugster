@@ -49,7 +49,22 @@ class LaravelBugsterStatusCode extends Resource
                 ->sortable(),
 
             Text::make('Display Name')
-                ->sortable(),
+                ->displayUsing(function ($value) {
+                    return '
+                        <router-link :to="{
+                                name: \'bugster-status-codes-chart\',
+                                params: {
+                                    code: \''.$this->code.'\',
+                                    display_name: \''.$value.'\'
+                                }
+                            }"
+                            class="text-white ml-8 no-underline dim">
+                            '.$value.'
+                        </router-link>
+                    ';
+                })
+                ->sortable()
+                ->asHtml(),
 
             Number::make('Code')
                 ->sortable(),

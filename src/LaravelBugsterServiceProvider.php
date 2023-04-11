@@ -4,6 +4,7 @@ namespace Vlinde\Bugster;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Nova\Fields\Field;
 use Vlinde\Bugster\Console\Commands\CheckQueuesStatus;
 use Vlinde\Bugster\Console\Commands\CountStatusCodes;
 use Vlinde\Bugster\Console\Commands\DeleteOldBugs;
@@ -41,6 +42,12 @@ class LaravelBugsterServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->bootForConsole();
         }
+
+        Field::macro('chart-link', function ($value) {
+            return $this->displayUsing(
+                view('nova::components.my-link', ['value' => $value])
+            );
+        });
     }
 
     /**
