@@ -3,7 +3,8 @@
         <heading class="mb-6">Status Codes</heading>
 
         <card class="flex flex-col p-4 w-full" style="min-height: 400px">
-            <div class="flex mb-6 justify-end">
+            <div class="flex mb-6 justify-between items-center">
+                <h2 class="text-90 font-normal text-1xl">Stats</h2>
                 <date-range-picker
                     ref="picker"
                     opens="left"
@@ -133,7 +134,8 @@ export default {
             return {
                 'Today': [today, today],
                 'Last 7 days': [new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7), today],
-                'Last year': [new Date(today.getFullYear() - 1, today.getMonth(), today.getDate()), today],
+                'This month': [new Date(today.getFullYear(), today.getMonth(), 1), today],
+                'This year': [new Date(today.getFullYear(), 0, 1), today],
             }
         },
         pickerDateUpdated() {
