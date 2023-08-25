@@ -1,5 +1,4 @@
-import LogFile from "./components/LogFile";
-import Directory from "./components/Directory";
+import Logs from "./components/Logs";
 import StatusCodesChart from "./components/StatusCodesChart";
 
 Nova.booting((Vue, router, store) => {
@@ -7,12 +6,7 @@ Nova.booting((Vue, router, store) => {
         {
             name: 'bugster-log-files',
             path: '/log-files',
-            component: LogFile,
-        },
-        {
-            name: 'bugster-log-files-directory',
-            path: '/log-files/directory/:directory_path/:directory_name',
-            component: Directory,
+            component: Logs,
         },
         {
             name: 'bugster-status-codes-chart',

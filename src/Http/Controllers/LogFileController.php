@@ -5,6 +5,7 @@ namespace Vlinde\Bugster\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class LogFileController extends Controller
 {
@@ -23,6 +24,10 @@ class LogFileController extends Controller
             abort(404);
         }
 
+        if (! $this->checkIfAuthorized($path)) {
+            abort(403, 'You are not authorized to view this directory');
+        }
+
         $files = $this->getFiles($path);
 
         return response()->json($files);
@@ -34,6 +39,10 @@ class LogFileController extends Controller
 
         if (! $filePath || ! File::exists($filePath)) {
             abort(404, 'Invalid file path');
+        }
+
+        if (! $this->checkIfAuthorized($filePath)) {
+            abort(403, 'You are not authorized to download this file');
         }
 
         return response()->download($filePath);
@@ -81,5 +90,10 @@ class LogFileController extends Controller
             'directories' => $directories,
             'files' => $logFiles,
         ];
+    }
+
+    private function checkIfAuthorized(string $path): bool
+    {
+        return Str::contains($path, '/storage/logs');
     }
 }
