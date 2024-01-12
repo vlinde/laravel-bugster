@@ -48,6 +48,51 @@ class LogFileController extends Controller
         return response()->download($filePath);
     }
 
+    public function rename(Request $request)
+    {
+        $filePath = $request->file_path;
+
+        if (! $filePath || ! File::exists($filePath)) {
+            abort(404, 'Invalid file path');
+        }
+
+        if (! $this->checkIfAuthorized($filePath)) {
+            abort(403, 'You are not authorized to download this file');
+        }
+
+        $directory = pathinfo($filePath, PATHINFO_DIRNAME);
+        $filename = pathinfo($filePath, PATHINFO_FILENAME);
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        $newFilePath = "$directory/$filename.$extension";
+
+        $counter = 0;
+        $incrementExistingCounter = false;
+
+        if (preg_match('/--(\d+)$/', $filename, $matches)) {
+            $counter = (int) $matches[1];
+            $incrementExistingCounter = true;
+        }
+
+        while (File::exists($newFilePath)) {
+            $counter++;
+
+            if ($incrementExistingCounter) {
+                $newFileName = preg_replace('/--(\d+)$/', "--$counter", $filename);
+            } else {
+                $newFileName = "$filename--$counter";
+            }
+
+            $newFilePath = "$directory/$newFileName.$extension";
+        }
+
+        rename($filePath, $newFilePath);
+
+        return response()->json([
+            'message' => 'File renamed successfully',
+        ]);
+    }
+
     private function getFiles(string $path): array
     {
         $files = array_diff(scandir($path), self::IGNORED_FILES);
