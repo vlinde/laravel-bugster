@@ -16,13 +16,13 @@ class BugsterLoadBugs
 {
     public function saveError($request, Throwable $exception, ?int $statusCode = null, $saveType = 'HTTP'): void
     {
-//        if ($exception instanceof HttpExceptionInterface) {
-//            $code = $exception->getStatusCode();
-//        } else {
-//            $code = $exception->getCode();
-//        }
-//
-//        $code = $code === 0 ? 500 : $code;
+        //        if ($exception instanceof HttpExceptionInterface) {
+        //            $code = $exception->getStatusCode();
+        //        } else {
+        //            $code = $exception->getCode();
+        //        }
+        //
+        //        $code = $code === 0 ? 500 : $code;
 
         if ($statusCode === null) {
             $statusCode = 500;

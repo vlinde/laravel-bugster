@@ -44,8 +44,8 @@ class StatusCodeController extends Controller
     private function getStatusCode(?string $startDate, ?string $endDate): Collection
     {
         return LaravelBugsterStatusCode::when($startDate, function ($query) use ($startDate) {
-                return $query->whereDate('date', '>=', $startDate);
-            })
+            return $query->whereDate('date', '>=', $startDate);
+        })
             ->when($endDate, function ($query) use ($endDate) {
                 return $query->whereDate('date', '<=', $endDate);
             })
