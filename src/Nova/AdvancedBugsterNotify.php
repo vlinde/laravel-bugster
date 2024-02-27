@@ -14,6 +14,8 @@ class AdvancedBugsterNotify extends Resource
 {
     public static $displayInNavigation = false;
 
+    public static $globallySearchable = false;
+
     /**
      * The model the resource corresponds to.
      *
@@ -26,7 +28,7 @@ class AdvancedBugsterNotify extends Resource
      *
      * @var string
      */
-    public static $title = 'id';
+    public static $title = 'statistic_key';
 
     /**
      * The columns that should be searched.
@@ -34,27 +36,37 @@ class AdvancedBugsterNotify extends Resource
      * @var array
      */
     public static $search = [
-        'id',
+        'id', 'statistic_key',
     ];
 
     /**
      * Get the fields displayed by the resource.
-     *
-     * @return array
      */
-    public function fields(Request $request)
+    public function fields(Request $request): array
     {
-        $statistics = Statistic::select('id', 'name')->groupBy('name')->pluck('name', 'name')->toArray();
-
         return [
-            ID::make()->sortable(),
+            ID::make()
+                ->sortable(),
 
             Select::make('Statistic', 'statistic_key')
-                ->options($statistics)
-                ->rules(['required', 'unique:laravel_bugster_notifications,statistic_key']),
+                ->searchable()
+                ->options(function () {
+                    return Statistic::select('id', 'name')
+                        ->where('name', 'not like', '%_sources_%')
+                        ->where('name', 'not like', '%_source_%')
+                        ->groupBy('name')
+                        ->pluck('name', 'name')
+                        ->toArray();
+                })
+                ->rules(['required', 'string']),
 
             Number::make('Min Value')
-                ->rules(['required']),
+                ->nullable()
+                ->rules(['nullable', 'numeric']),
+
+            Number::make('Max Value')
+                ->nullable()
+                ->rules(['nullable', 'numeric']),
         ];
     }
 }

@@ -2,9 +2,10 @@
 
 namespace Vlinde\Bugster\Console\Commands;
 
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Notification;
+use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
 use Vlinde\Bugster\Models\AdvancedBugsterNotify;
 use Vlinde\Bugster\Notifications\InvalidStatistics;
 use Vlinde\NovaStatistics\Models\Statistic;
@@ -30,12 +31,10 @@ class NotifyStatistics extends Command
      */
     public function handle(): void
     {
-        $bugestStats = AdvancedBugsterNotify::select('statistic_key', 'min_value')
-            ->pluck('min_value', 'statistic_key')
-            ->toArray();
+        $bugestStats = AdvancedBugsterNotify::select('statistic_key', 'min_value', 'max_value')->get();
 
         $statistics = Statistic::select('name', 'value')
-            ->whereIn('name', array_keys($bugestStats))
+            ->whereIn('name', $bugestStats->pluck('statistic_key')->toArray())
             ->whereDate('created_at', Carbon::today())
             ->groupBy('name')
             ->pluck('value', 'name')
@@ -44,21 +43,27 @@ class NotifyStatistics extends Command
             })
             ->toArray();
 
-        foreach ($bugestStats as $key => $minValue) {
-            if (! array_key_exists($key, $statistics)) {
+        foreach ($bugestStats as $bugestStat) {
+            if (! array_key_exists($bugestStat->statistic_key, $statistics)) {
                 continue;
             }
 
-            if ($statistics[$key] >= $minValue) {
+            $statValue = $statistics[$bugestStat->statistic_key];
+
+            if ($bugestStat->min_value !== null && $bugestStat->max_value !== null &&
+                ($statValue < $bugestStat->min_value || $statValue > $bugestStat->max_value)
+            ) {
+                $message = "Stats for '$bugestStat->statistic_key' ($statValue) is not between '$bugestStat->min_value-$bugestStat->max_value' range";
+            } elseif ($bugestStat->min_value !== null && $statValue < $bugestStat->min_value) {
+                $message = "Stats for '$bugestStat->statistic_key' ($statValue) is less than '$bugestStat->min_value'";
+            } elseif ($bugestStat->max_value !== null && $statValue > $bugestStat->max_value) {
+                $message = "Stats for '$bugestStat->statistic_key' ($statValue) is more than '$bugestStat->max_value'";
+            } else {
                 continue;
             }
 
-            (new User)
-                ->forceFill([
-                    'name' => 'Microsoft Teams',
-                    'email' => 'dev@vlinde.com',
-                ])
-                ->notify(new InvalidStatistics($key, $minValue, $statistics[$key]));
+            Notification::route(MicrosoftTeamsChannel::class, null)
+                ->notify(new InvalidStatistics($message));
         }
     }
 }

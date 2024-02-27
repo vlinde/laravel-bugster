@@ -11,5 +11,6 @@ class AdvancedBugsterNotify extends Model
     protected $fillable = [
         'statistic_key',
         'min_value',
+        'max_value',
     ];
 }

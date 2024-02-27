@@ -11,31 +11,16 @@ class InvalidStatistics extends Notification
 {
     use Queueable;
 
-    /**
-     * @var string
-     */
-    private $statisticKey;
-
-    /**
-     * @var int
-     */
-    private $minValue;
-
-    /**
-     * @var int
-     */
-    private $currentValue;
+    private string $message;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(string $statisticKey, int $minValue, int $currentValue)
+    public function __construct(string $message)
     {
-        $this->statisticKey = $statisticKey;
-        $this->minValue = $minValue;
-        $this->currentValue = $currentValue;
+        $this->message = $message;
     }
 
     public function via($notifiable)
@@ -49,7 +34,7 @@ class InvalidStatistics extends Notification
             ->to(config('bugster.microsoft_team_hook'))
             ->type('warning')
             ->title('Statistics')
-            ->content("Stats for '$this->statisticKey' ($this->currentValue) is less than $this->minValue")
+            ->content($this->message)
             ->button('Check Statistics', url('/nova/dashboards/main'));
 
     }
