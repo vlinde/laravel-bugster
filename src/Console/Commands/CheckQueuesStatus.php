@@ -132,14 +132,6 @@ class CheckQueuesStatus extends Command
                 continue;
             }
 
-            $lastJob = $this->getLastJob("queues:$queue");
-
-            if ($lastJob && (int) $lastJob['pushedAt'] < strtotime('-1 day')) {
-                $stoppedQueues[] = $queue;
-
-                continue;
-            }
-
             $firstDelayedJob = $this->getFirstDelayedJob("queues:$queue:delayed");
 
             if ($firstDelayedJob && $firstDelayedJob['delayed_until'] < time()) {
@@ -148,13 +140,6 @@ class CheckQueuesStatus extends Command
         }
 
         return $stoppedQueues;
-    }
-
-    private function getLastJob(string $queue): ?array
-    {
-        $lastJob = $this->redis->lindex($queue, -1);
-
-        return $lastJob ? json_decode($lastJob, true) : null;
     }
 
     private function getFirstDelayedJob(string $delayedQueue): ?array
