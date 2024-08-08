@@ -3,6 +3,7 @@
 namespace Vlinde\Bugster\Console\Commands;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\Log;
@@ -134,7 +135,10 @@ class CheckQueuesStatus extends Command
 
             $firstDelayedJob = $this->getFirstDelayedJob("queues:$queue:delayed");
 
-            if ($firstDelayedJob && $firstDelayedJob['delayed_until'] < time()) {
+            if ($firstDelayedJob &&
+                isset($firstDelayedJob['delayed_until']) &&
+                Carbon::parse($firstDelayedJob['delayed_until'])->addHour()->timestamp < time()
+            ) {
                 $stoppedQueues[] = $queue;
             }
         }

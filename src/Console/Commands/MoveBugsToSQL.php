@@ -61,7 +61,7 @@ class MoveBugsToSQL extends Command
             return;
         }
 
-        $bugster = new AdvancedBugsterDB();
+        $bugster = new AdvancedBugsterDB;
 
         $bugster->full_url = $log['full_url'];
         $bugster->category = 'laravel';
