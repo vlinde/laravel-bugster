@@ -4,8 +4,10 @@ namespace Vlinde\Bugster\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\MicrosoftTeams\Actions\ActionOpenUrl;
+use NotificationChannels\MicrosoftTeams\ContentBlocks\TextBlock;
+use NotificationChannels\MicrosoftTeams\MicrosoftTeamsAdaptiveCard;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
-use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
 
 class InvalidStatistics extends Notification
 {
@@ -28,14 +30,23 @@ class InvalidStatistics extends Notification
         return [MicrosoftTeamsChannel::class];
     }
 
-    public function toMicrosoftTeams($notifiable)
+    public function toMicrosoftTeams($notifiable): MicrosoftTeamsAdaptiveCard
     {
-        return MicrosoftTeamsMessage::create()
-            ->to(config('bugster.microsoft_team_hook'))
-            ->type('warning')
-            ->title('Statistics')
-            ->content($this->message)
-            ->button('Check Statistics', url('/nova/dashboards/main'));
+        $content = [
+            TextBlock::create()
+                ->setText($this->message),
+        ];
 
+        $actions = [
+            ActionOpenUrl::create()
+                ->setUrl(url('/nova/dashboards/main'))
+                ->setTitle('Check Statistics'),
+        ];
+
+        return MicrosoftTeamsAdaptiveCard::create()
+            ->to(config('bugster.microsoft_team_hook'))
+            ->title('Statistics')
+            ->content($content)
+            ->actions($actions);
     }
 }

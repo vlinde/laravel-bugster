@@ -4,8 +4,10 @@ namespace Vlinde\Bugster\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\MicrosoftTeams\Actions\ActionOpenUrl;
+use NotificationChannels\MicrosoftTeams\ContentBlocks\TextBlock;
+use NotificationChannels\MicrosoftTeams\MicrosoftTeamsAdaptiveCard;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
-use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
 
 class QueuesStoppedWorking extends Notification
 {
@@ -34,18 +36,29 @@ class QueuesStoppedWorking extends Notification
         return [MicrosoftTeamsChannel::class];
     }
 
-    public function toMicrosoftTeams($notifiable)
+    public function toMicrosoftTeams($notifiable): MicrosoftTeamsAdaptiveCard
     {
         $this->stoppedQueues = array_map(function ($stoppedQueue) {
             return "**$stoppedQueue**";
         }, $this->stoppedQueues);
 
-        return MicrosoftTeamsMessage::create()
+        $content = [
+            TextBlock::create()
+                ->setText('The following queue(s) do not work: '.implode(', ', $this->stoppedQueues)),
+            TextBlock::create()
+                ->setText('Restart them from Forge'),
+        ];
+
+        $actions = [
+            ActionOpenUrl::create()
+                ->setUrl('https://forge.laravel.com/servers')
+                ->setTitle('Forge'),
+        ];
+
+        return MicrosoftTeamsAdaptiveCard::create()
             ->to(config('bugster.microsoft_team_hook'))
-            ->type('warning')
             ->title('Queues have stopped working')
-            ->content('The following queue(s) do not work: '.implode(', ', $this->stoppedQueues), ['section' => 1])
-            ->content('Restart them from Forge', ['section' => 2])
-            ->button('Forge', 'https://forge.laravel.com/servers');
+            ->content($content)
+            ->actions($actions);
     }
 }
