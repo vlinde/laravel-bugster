@@ -8,7 +8,6 @@ use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Resource;
 use Vlinde\Bugster\Models\AdvancedBugsterNotify as AdvancedBugsterNotifyModel;
-use Vlinde\NovaStatistics\Models\Statistic;
 
 class AdvancedBugsterNotify extends Resource
 {
@@ -50,14 +49,7 @@ class AdvancedBugsterNotify extends Resource
 
             Select::make('Statistic', 'statistic_key')
                 ->searchable()
-                ->options(function () {
-                    return Statistic::select('id', 'name')
-                        ->where('name', 'not like', '%_sources_%')
-                        ->where('name', 'not like', '%_source_%')
-                        ->groupBy('name')
-                        ->pluck('name', 'name')
-                        ->toArray();
-                })
+                ->options($this->getStatisticsKeys())
                 ->rules(['required', 'string']),
 
             Number::make('Min Value')
@@ -68,5 +60,12 @@ class AdvancedBugsterNotify extends Resource
                 ->nullable()
                 ->rules(['nullable', 'numeric']),
         ];
+    }
+
+    private function getStatisticsKeys(): array
+    {
+        $statisticsKeys = config('bugster.statistic_keys', []);
+
+        return array_combine($statisticsKeys, $statisticsKeys);
     }
 }

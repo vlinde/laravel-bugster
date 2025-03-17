@@ -15,4 +15,6 @@ return [
 
     // Microsoft Teams webhook for notification
     'microsoft_team_hook' => env('MS_TEAMS_WEBHOOK_URL'),
+
+    'statistic_keys' => [],
 ];
