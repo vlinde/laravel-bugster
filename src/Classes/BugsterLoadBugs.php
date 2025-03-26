@@ -46,6 +46,11 @@ class BugsterLoadBugs
         $date = trim($date);
         $hour = trim($hour);
 
+        $context = [];
+        if ($statusCode === 401) {
+            $context = $request->all();
+        }
+
         $log = [
             'type' => $type,
             'status_code' => $statusCode,
@@ -58,6 +63,7 @@ class BugsterLoadBugs
             'debug_mode' => config('env.APP_DEBUG'),
             'date' => $date,
             'hour' => $hour,
+            'context' => $context,
         ];
 
         if ($saveType === 'TERMINAL') {
@@ -139,6 +145,6 @@ class BugsterLoadBugs
     {
         $fullMessage = "ip: {$log['ip_address']} | method: {$log['method']} | code: {$log['status_code']} | ref: {$log['previous_url']} | path: {$log['path']} | message: {$log['message']}";
 
-        Log::channel(config('bugster.log_channel'))->info($fullMessage);
+        Log::channel(config('bugster.log_channel'))->info($fullMessage, $log['context'] ?? []);
     }
 }
