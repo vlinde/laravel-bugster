@@ -4,8 +4,8 @@ namespace Vlinde\Bugster;
 
 use Laravel\Nova\Nova;
 use Laravel\Nova\Tool;
-use Vlinde\Bugster\Nova\AdvancedBugsterDB;
 use Vlinde\Bugster\Nova\AdvancedBugsterNotify;
+use Vlinde\Bugster\Nova\LaravelBugsterWebhook;
 
 class LaravelBugster extends Tool
 {
@@ -19,8 +19,8 @@ class LaravelBugster extends Tool
         Nova::script('laravel-bugster', __DIR__.'/../dist/js/tool.js');
 
         Nova::resources([
-            AdvancedBugsterDB::class,
             AdvancedBugsterNotify::class,
+            LaravelBugsterWebhook::class,
         ]);
     }
 

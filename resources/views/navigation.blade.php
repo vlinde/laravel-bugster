@@ -21,10 +21,10 @@
         <router-link :to="{
                     name: 'index',
                     params: {
-                        resourceName: 'advanced-bugster-d-bs'
+                        resourceName: 'laravel-bugster-webhooks'
                     }
                 }" class="text-white ml-8 no-underline dim">
-            Logs
+            Webhooks
         </router-link>
     </li>
 

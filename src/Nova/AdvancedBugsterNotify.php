@@ -38,6 +38,11 @@ class AdvancedBugsterNotify extends Resource
         'id', 'statistic_key',
     ];
 
+    public static function label(): string
+    {
+        return 'Alerts';
+    }
+
     /**
      * Get the fields displayed by the resource.
      */

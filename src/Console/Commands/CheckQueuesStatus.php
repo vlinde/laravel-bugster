@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
+use Vlinde\Bugster\Jobs\SendWebhookNotification;
 use Vlinde\Bugster\Notifications\QueuesStoppedWorking;
 
 class CheckQueuesStatus extends Command
@@ -170,12 +171,17 @@ class CheckQueuesStatus extends Command
     private function notifyIfStopped(array $stoppedQueues): void
     {
         if (! empty($stoppedQueues)) {
-            (new User)
-                ->forceFill([
-                    'name' => 'Microsoft Teams',
-                    'email' => 'dev@vlinde.com',
-                ])
-                ->notify(new QueuesStoppedWorking($stoppedQueues));
+            SendWebhookNotification::dispatchSync([
+                'title' => 'Queues have stopped working',
+                'message' => 'The following queue(s) do not work: '.implode(', ', $stoppedQueues),
+            ]);
+
+            //            (new User)
+            //                ->forceFill([
+            //                    'name' => 'Microsoft Teams',
+            //                    'email' => 'dev@vlinde.com',
+            //                ])
+            //                ->notify(new QueuesStoppedWorking($stoppedQueues));
         }
     }
 }
