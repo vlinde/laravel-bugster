@@ -8,6 +8,7 @@ use Laravel\Nova\Fields\Code;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Resource;
+use Vlinde\Bugster\Nova\Actions\TestWebhook;
 
 class LaravelBugsterWebhook extends Resource
 {
@@ -62,6 +63,13 @@ class LaravelBugsterWebhook extends Resource
 
             Boolean::make('Active')
                 ->sortable(),
+        ];
+    }
+
+    public function actions(Request $request): array
+    {
+        return [
+            new TestWebhook,
         ];
     }
 }

@@ -17,14 +17,27 @@ class SendWebhookNotification implements ShouldQueue
 
     private array $data;
 
-    public function __construct(array $data)
+    private ?int $webhookId;
+
+    private bool $activeOnly;
+
+    public function __construct(array $data, ?int $webhookId = null, bool $activeOnly = true)
     {
         $this->data = $data;
+        $this->webhookId = $webhookId;
+        $this->activeOnly = $activeOnly;
     }
 
     public function handle(): void
     {
-        $webhooks = LaravelBugsterWebhook::where('active', true)->get();
+        $webhooks = LaravelBugsterWebhook::query()
+            ->when($this->activeOnly, function ($query) {
+                $query->where('active', true);
+            })
+            ->when($this->webhookId, function ($query) {
+                $query->where('id', $this->webhookId);
+            })
+            ->get();
 
         foreach ($webhooks as $webhook) {
             $this->sendToWebhook($webhook);
