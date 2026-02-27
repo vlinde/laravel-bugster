@@ -4,11 +4,8 @@ namespace Vlinde\Bugster\Console\Commands;
 
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Notification;
-use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
 use Vlinde\Bugster\Jobs\SendWebhookNotification;
 use Vlinde\Bugster\Models\AdvancedBugsterNotify;
-use Vlinde\Bugster\Notifications\InvalidStatistics;
 use Vlinde\NovaStatistics\Models\Statistic;
 
 class NotifyStatistics extends Command
@@ -66,10 +63,7 @@ class NotifyStatistics extends Command
             SendWebhookNotification::dispatchSync([
                 'title' => 'Statistics',
                 'message' => $message,
-            ]);
-
-            //            Notification::route(MicrosoftTeamsChannel::class, null)
-            //                ->notify(new InvalidStatistics($message));
+            ], webhookType: 'alert');
         }
     }
 }

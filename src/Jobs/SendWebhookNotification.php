@@ -15,16 +15,21 @@ class SendWebhookNotification implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    private const DEFAULT_WEBHOOK_TYPE = 'general';
+
     private array $data;
 
     private ?int $webhookId;
 
+    private ?string $webhookType;
+
     private bool $activeOnly;
 
-    public function __construct(array $data, ?int $webhookId = null, bool $activeOnly = true)
+    public function __construct(array $data, ?int $webhookId = null, ?string $webhookType = null, bool $activeOnly = true)
     {
         $this->data = $data;
         $this->webhookId = $webhookId;
+        $this->webhookType = $webhookType;
         $this->activeOnly = $activeOnly;
     }
 
@@ -36,6 +41,12 @@ class SendWebhookNotification implements ShouldQueue
             })
             ->when($this->webhookId, function ($query) {
                 $query->where('id', $this->webhookId);
+            })
+            ->when(! $this->webhookId && $this->webhookType, function ($query) {
+                $query->where('type', $this->webhookType);
+            })
+            ->when(! $this->webhookId && ! $this->webhookType, function ($query) {
+                $query->where('type', self::DEFAULT_WEBHOOK_TYPE);
             })
             ->get();
 
@@ -67,11 +78,13 @@ class SendWebhookNotification implements ShouldQueue
 
     private function replaceVariables(array $payload): array
     {
-        $json = json_encode($payload);
+        $json = is_array($payload) ? json_encode($payload) : $payload;
 
         foreach ($this->data as $key => $value) {
             if (is_scalar($value)) {
-                $json = str_replace('{{'.$key.'}}', $value, $json);
+                $escapedValue = json_encode((string) $value, JSON_UNESCAPED_SLASHES);
+                $escapedValue = trim($escapedValue, '"');
+                $json = str_replace('{{'.$key.'}}', $escapedValue, $json);
             }
         }
 

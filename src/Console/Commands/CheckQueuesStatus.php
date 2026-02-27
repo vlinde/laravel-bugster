@@ -2,7 +2,6 @@
 
 namespace Vlinde\Bugster\Console\Commands;
 
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Redis\Connections\Connection;
@@ -11,7 +10,6 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
 use Vlinde\Bugster\Jobs\SendWebhookNotification;
-use Vlinde\Bugster\Notifications\QueuesStoppedWorking;
 
 class CheckQueuesStatus extends Command
 {
@@ -175,13 +173,6 @@ class CheckQueuesStatus extends Command
                 'title' => 'Queues have stopped working',
                 'message' => 'The following queue(s) do not work: '.implode(', ', $stoppedQueues),
             ]);
-
-            //            (new User)
-            //                ->forceFill([
-            //                    'name' => 'Microsoft Teams',
-            //                    'email' => 'dev@vlinde.com',
-            //                ])
-            //                ->notify(new QueuesStoppedWorking($stoppedQueues));
         }
     }
 }

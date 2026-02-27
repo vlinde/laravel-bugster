@@ -38,6 +38,7 @@ class LaravelBugsterServiceProvider extends ServiceProvider
             __DIR__.'/Database/Migrations/create_laravel_bugster_status_codes_table.php' => database_path('migrations/'.date('Y_m_d_His', time() + 4).'_create_laravel_bugster_status_codes_table.php'),
             __DIR__.'/Database/Migrations/update_fields_to_laravel_bugster_notifications_table.php' => database_path('migrations/'.date('Y_m_d_His', time() + 5).'_update_fields_to_laravel_bugster_notifications_table.php'),
             __DIR__.'/Database/Migrations/create_laravel_bugster_webhooks_table.php' => database_path('migrations/'.date('Y_m_d_His', time() + 6).'create_laravel_bugster_webhooks_table.php'),
+            __DIR__.'/Database/Migrations/add_type_to_laravel_bugster_webhooks_table.php' => database_path('migrations/'.date('Y_m_d_His', time() + 7).'add_type_to_laravel_bugster_webhooks_table.php'),
         ], 'bugster-migrations');
 
         // Publishing is only necessary when using the CLI.

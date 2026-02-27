@@ -53,6 +53,9 @@ class LaravelBugsterWebhook extends Resource
             ID::make()
                 ->sortable(),
 
+            Text::make('Type')
+                ->rules(['nullable', 'string']),
+
             Text::make('Url')
                 ->rules(['required', 'string', 'url']),
 

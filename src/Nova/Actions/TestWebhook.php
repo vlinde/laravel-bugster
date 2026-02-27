@@ -24,7 +24,7 @@ class TestWebhook extends Action
             SendWebhookNotification::dispatchSync([
                 'title' => 'Test title',
                 'message' => 'Test message',
-            ], $model->id, false);
+            ], webhookId: $model->id, activeOnly: false);
         }
     }
 }

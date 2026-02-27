@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class LaravelBugsterWebhook extends Model
 {
     protected $fillable = [
-        'url', 'payload', 'active',
+        'type', 'url', 'payload', 'active',
     ];
 
     protected $casts = [
