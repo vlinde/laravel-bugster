@@ -9,6 +9,9 @@ use NotificationChannels\MicrosoftTeams\ContentBlocks\TextBlock;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsAdaptiveCard;
 use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
 
+/**
+ * @deprecated
+ */
 class InvalidStatistics extends Notification
 {
     use Queueable;
