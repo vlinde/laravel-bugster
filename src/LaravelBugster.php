@@ -2,6 +2,9 @@
 
 namespace Vlinde\Bugster;
 
+use Illuminate\Http\Request;
+use Laravel\Nova\Menu\MenuItem;
+use Laravel\Nova\Menu\MenuSection;
 use Laravel\Nova\Nova;
 use Laravel\Nova\Tool;
 use Vlinde\Bugster\Nova\AdvancedBugsterNotify;
@@ -16,21 +19,20 @@ class LaravelBugster extends Tool
      */
     public function boot()
     {
-        Nova::script('laravel-bugster', __DIR__.'/../dist/js/tool.js');
-
-        Nova::resources([
-            AdvancedBugsterNotify::class,
-            LaravelBugsterWebhook::class,
-        ]);
+        Nova::mix('laravel-bugster', __DIR__.'/../dist/mix-manifest.json');
     }
 
     /**
-     * Build the view that renders the navigation links for the tool.
-     *
-     * @return \Illuminate\View\View
+     * Build the menu that renders the navigation links for the tool.
      */
-    public function renderNavigation()
+    public function menu(Request $request): MenuSection
     {
-        return view('bugster::navigation');
+        return MenuSection::make('Bugster', [
+            MenuItem::link('Log Files', '/laravel-bugster/log-files'),
+            MenuItem::link('Webhooks', '/resources/'.LaravelBugsterWebhook::uriKey()),
+            MenuItem::link('Alerts', '/resources/'.AdvancedBugsterNotify::uriKey()),
+            MenuItem::link('Status Codes', '/laravel-bugster/status-codes-chart'),
+        ])
+            ->icon('bug-ant')->collapsable();
     }
 }

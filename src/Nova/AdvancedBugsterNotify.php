@@ -2,12 +2,11 @@
 
 namespace Vlinde\Bugster\Nova;
 
-use Illuminate\Http\Request;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
+use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Resource;
-use Vlinde\Bugster\Models\AdvancedBugsterNotify as AdvancedBugsterNotifyModel;
 
 class AdvancedBugsterNotify extends Resource
 {
@@ -17,10 +16,8 @@ class AdvancedBugsterNotify extends Resource
 
     /**
      * The model the resource corresponds to.
-     *
-     * @var string
      */
-    public static $model = AdvancedBugsterNotifyModel::class;
+    public static string $model = \Vlinde\Bugster\Models\AdvancedBugsterNotify::class;
 
     /**
      * The single value that should be used to represent the resource when being displayed.
@@ -46,7 +43,7 @@ class AdvancedBugsterNotify extends Resource
     /**
      * Get the fields displayed by the resource.
      */
-    public function fields(Request $request): array
+    public function fields(NovaRequest $request): array
     {
         return [
             ID::make()

@@ -1,17 +1,9 @@
-import Logs from "./components/Logs";
-import StatusCodesChart from "./components/StatusCodesChart";
+import Logs from "./pages/Logs";
+import StatusCodesChart from "./pages/StatusCodesChart";
 
-Nova.booting((Vue, router, store) => {
-    router.addRoutes([
-        {
-            name: 'bugster-log-files',
-            path: '/log-files',
-            component: Logs,
-        },
-        {
-            name: 'bugster-status-codes-chart',
-            path: '/status-codes-chart',
-            component: StatusCodesChart,
-        },
-    ])
+Nova.inertia("BugsterLogs", Logs);
+Nova.inertia("BugsterStatusCodesChart", StatusCodesChart);
+
+Nova.booting((app, store) => {
+  //
 });
