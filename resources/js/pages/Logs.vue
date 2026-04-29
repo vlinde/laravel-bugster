@@ -4,7 +4,7 @@
     <Heading :level="1" class="mb-6">Log Files</Heading>
 
     <Card class="p-3">
-      <div v-if="directories.length > 0" class="flex flex-col gap-4">
+      <div v-if="directories.length > 0" class="flex flex-col gap-4 mb-4">
         <div
           v-for="(directory, index) in directories"
           class="w-full"
@@ -62,7 +62,7 @@
         </div>
       </div>
 
-      <div v-if="files.length > 0" class="flex flex-col mt-4 gap-4">
+      <div v-if="files.length > 0" class="flex flex-col gap-4">
         <div v-for="(file, index) in files" class="w-full" :key="index">
           <a
             :href="file.download_link"
